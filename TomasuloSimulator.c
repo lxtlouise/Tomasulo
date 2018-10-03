@@ -16,12 +16,15 @@ int cacheLineSize = 4; //CLS
 
 
 int main(int argc, char** argv) {
-	config = (Config*)malloc(sizeof(Config));
+
 	//Validate command line argument
 	if (argc != 3) {
 		printf ("USAGE: TomasuloSimulator <benchmark_file>\n");
 		exit (EXIT_FAILURE);
 	}
+
+	config = (Config*)malloc(sizeof(Config));
+	read_configfile(argv[2]);
 
 	fillInstructionAndDataCache (argv[1]); //call loader to fill caches
 
@@ -40,7 +43,6 @@ int main(int argc, char** argv) {
 
 	printIntegerRegisters (); //print integer registers
 	printFPRegisters (); //print floating point registers
-	read_configfile(argv[2]);
 
 	return 0;
 }
