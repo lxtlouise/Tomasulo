@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
 
 	//Validate command line argument
 	if (argc != 3) {
-		printf ("USAGE: TomasuloSimulator <benchmark_file>\n");
+		printf ("USAGE: TomasuloSimulator <benchmark_file> <config_file>\n");
 		exit (EXIT_FAILURE);
 	}
 
@@ -35,6 +35,8 @@ int main(int argc, char** argv) {
 	printCodeLabels (); //print data cache
 
 	initializeCPU (); //initialize CPU data structure
+
+	initializeIF_Unit(); // initialize IF unit
 
 	while (runClockCycle()); //loop emulating simulator clock cycles
 

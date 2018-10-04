@@ -118,10 +118,9 @@ typedef struct _BTB_value{
 } BTB_value;
 
 typedef struct _IFUnit {
-//	IF_Instr_entry instructions[32];
+	int PC;
+	char** instructions;
 	int n_instructions;
-	//char instructions[32][MAX_LINE];
-	//BTB_entry* instr_btb[32];
 } IF_Unit;
 
 typedef struct _IDUnit {

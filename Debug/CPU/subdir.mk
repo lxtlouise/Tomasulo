@@ -9,11 +9,17 @@ C_SRCS += \
 C_SRCS += \
 ../CPU/ReadConfig.c
 
+C_SRCS += \
+../CPU/InstructionFetch.c
+
 OBJS += \
 ./CPU/CPU.o
 
 OBJS += \
 ./CPU/ReadConfig.o
+
+OBJS += \
+./CPU/InstructionFetch.o
 
 C_DEPS += \
 ./CPU/CPU.d 

@@ -66,8 +66,10 @@ WB_Unit *wb_unit;
 void fillInstructionAndDataCache (char *fileName);
 
 void initializeCPU ();
+void initializeIF_Unit();
 
 int runClockCycle ();
+void fetch_instruction();
 
 void printInstructionCache ();
 void printCodeLabels ();

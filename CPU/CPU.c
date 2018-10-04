@@ -60,7 +60,7 @@ int runClockCycle () {
 		return 0; 
         } 
 	
-
+	/*********** original fetch stage
         void *addrPtr = malloc(sizeof(int));
 	*((int*)addrPtr) = cpu -> PC;
 
@@ -70,7 +70,12 @@ int runClockCycle () {
         strcpy (instruction_str, ((char*)currentInstruction -> value -> value));
 
         printf ("Fetched %d:%s\n", cpu -> PC, instruction_str);
+	***************/
 
+	fetch_instruction();
+
+
+	/*************  original decode stage
 	Instruction *instruction;
 
         char *token = (char *) malloc (sizeof(char) * MAX_LINE);
@@ -376,7 +381,9 @@ int runClockCycle () {
 
 	printf("Decoded %d:%s -> %s, rd=%d, rs=%d, rt=%d, fd=%d, fs=%d, ft=%d, immediate=%d, target=%d\n", cpu -> PC, instruction_str,
 		 getOpcodeString ((int) op), rd, rs, rt, fd, fs, ft, immediate, target);
+	***********/
 
+	/******* original execute stage
 	void *valuePtr = malloc(sizeof(double));
 
 	DictionaryEntry *dataCacheElement;
@@ -534,7 +541,7 @@ int runClockCycle () {
                                 break;
                 }
 
-
+	**********/
 	return 1;
 }
 

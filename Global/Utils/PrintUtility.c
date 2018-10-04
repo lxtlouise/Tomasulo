@@ -35,7 +35,7 @@ void printCodeLabels () {
 		printf ("-----------\n");
 
 		for (current = codeLabels -> head; current != NULL; current = current -> next)
-			printf ("%s: %d\n", ((char*)current -> key), *((int*)current -> value -> value));
+		 	printf ("%s: %d\n", ((char*)current -> key), *((int*)current -> value -> value));
 	}
 }
 
