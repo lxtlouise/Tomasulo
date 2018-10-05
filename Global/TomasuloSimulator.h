@@ -61,16 +61,18 @@ ID_Unit *id_unit;
 EX_Unit *ex_unit;
 WB_Unit *wb_unit;
 
-
+int runClockCycle_IF();
 
 void fillInstructionAndDataCache (char *fileName);
+
+void setBTBEntry(Instruction* instruction, int branch_taken, int branch_target);
 
 void initializeCPU ();
 void initializeIF_Unit();
 
 int runClockCycle ();
-void fetch_instruction();
-
+void initializeInstruction(Instruction *instruction);
+void copyInstruction(Instruction *dest, Instruction *src);
 void printInstructionCache ();
 void printCodeLabels ();
 void printDataCache ();

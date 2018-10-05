@@ -7,7 +7,7 @@
 
 #ifndef GLOBAL_DATATYPES_H_
 #define GLOBAL_DATATYPES_H_
-
+#define MAX_LINE 4096
 #include "./ADT/CircularQueue.h"
 #include "./ADT/Dictionary.h"
 
@@ -43,8 +43,16 @@ static inline char *getOpcodeString (int opcode) {
 	return opcodeString[opcode];
 }
 
+typedef struct _BTB_value{
+    int PC;
+    int target_address;
+    int taken;
+} BTB_value;
+
 //data structure for decoded instruction
 typedef struct _instruction {
+    char instr[MAX_LINE];
+    int PC;
 	OpCode op;
 	int address;
 
@@ -68,6 +76,9 @@ typedef struct _instruction {
 
 	int is_valid;
 
+    int branch_predicted;
+    int prediction_target;
+    int prediction_taken;
 } Instruction;
 
 //data structure for each item in integer registers and work as well register status
@@ -112,14 +123,15 @@ typedef struct _config {
     int NB; // number of cdb buses
 } Config;
 
-typedef struct _BTB_value{
-    int target_address;
-    int taken;
-} BTB_value;
+
+
+typedef struct _IF_Instr_entry{
+    char instr[MAX_LINE];
+} IF_Instr_entry;
 
 typedef struct _IFUnit {
-	int PC;
-	char** instructions;
+    int PC;
+	Instruction* instructions[32];
 	int n_instructions;
 } IF_Unit;
 

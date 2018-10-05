@@ -4,55 +4,160 @@ int getHashCodeFromCacheAddress_IF (void *address);
 int compareBTBValues (void *btbvalue1, void *btbvalue2);
 
 
-void initializeIF_Unit() {
-    BTB = createDictionary(getHashCodeFromCacheAddress_IF, compareBTBValues);
-	if_unit = (struct _IFUnit*) malloc(sizeof(struct _IFUnit));
-	if_unit->instructions = (char**) malloc(config->NF * sizeof(char*));
-	int i = 0;
-	for (; i < config->NF; i++) {
-		*(if_unit->instructions + i) = (char*) malloc(sizeof(char) * MAX_LINE);
-	}
+void initializeInstruction(Instruction *instruction){
+    instruction->is_valid = 0;
+    instruction->branch_predicted = 0;
+    instruction->prediction_taken = 0;
+    instruction->prediction_target = 0;
 }
 
-void fetch_instruction() {
-	if_unit -> PC = cpu -> PC;
-	if_unit -> n_instructions = 0;
-	int num_instrction = config->NF;
-	if (0) {
-		//TODO: cases when we can only fetch less than NF instructions
-	}
-	int i = 0;
-	for (; i <num_instrction; i++) {
-		void *addrPtr = malloc(sizeof(int));
-		*((int*)addrPtr) = cpu -> PC;
-		DictionaryEntry *currentInstruction = getValueChainByDictionaryKey (instructionCache, addrPtr);
+void copyInstruction(Instruction *dest, Instruction *src){
+    strncpy(dest->instr, src->instr, MAX_LINE);
+    dest->PC = src->PC;
+    dest->is_valid = src->is_valid;
+	dest->op = src->op;
+	dest->address = src->address;
 
-    	strcpy (*(if_unit->instructions + i), ((char*)currentInstruction -> value -> value));
-		if_unit -> n_instructions++;
-    	printf ("Fetched %d:%s\n", if_unit -> PC, *(if_unit->instructions + i));
-		DictionaryEntry *BTB_result = getValueChainByDictionaryKey(BTB, addrPtr);
-		if (BTB_result != NULL) {	// if current instruction is a branch
-			BTB_value *prediction =  (BTB_value*)BTB_result;
-			if (prediction -> taken) {
-				cpu -> PC = prediction -> target_address;
-				continue;
-			}
-		}
-		cpu -> PC += 4;
+	dest->rd = src->rd;
+	dest->rs = src->rs;
+	dest->rt = src->rt;
+
+	dest->rsValue = src->rsValue;
+	dest->rtValue = src->rtValue;
+
+	dest->fd = src->fd;
+	dest->fs = src->fs;
+	dest->ft = src->ft;
+
+	dest->fsValue = src->fsValue;
+	dest->ftValue = src->ftValue;
+
+	dest->immediate = src->immediate;
+
+	dest->target = src->target;
+	dest->branch_predicted = src->branch_predicted;
+	dest->prediction_taken = src->prediction_taken;
+	dest->prediction_target = src->prediction_target;
+}
+
+void initializeIF_Unit() {
+    if_unit = malloc(sizeof(IF_Unit));
+    BTB = createDictionary(getHashCodeFromCacheAddress_IF, compareBTBValues);
+    if_unit->PC = instructionCacheBaseAddress;
+}
+
+
+void setBTBEntry(Instruction* instruction, int branch_taken, int branch_target){
+    BTB_value* val;
+    DictionaryEntry *dval = getValueChainByDictionaryKey(BTB, &(instruction->PC));
+    if(dval==NULL){
+        val = malloc(sizeof(BTB_value));
+        val->PC = instruction->PC;
+        addDictionaryEntry (BTB, &(instruction->PC), val);
+    } else{
+        val = dval->value->value;
+        val->PC = instruction->PC;
+    }
+    val->taken = branch_taken;
+    if(branch_taken)
+        val->target_address = branch_target;
+    else
+        val->target_address = instruction->PC + 4;
+}
+
+int predecodeBranchInstruction(Instruction *instruction){
+    char *token = (char *) malloc (sizeof(char) * MAX_LINE);
+
+	int is_branch = 0;
+	token = (char *) malloc (sizeof(char) * MAX_LINE);
+
+	strcpy (token, instruction->instr);
+
+	token = strtok(token, " ,()\t\n");
+
+	if(strcmp(token, "BEQZ") == 0) {
+		token = strtok(NULL, " ,()RF\t\n");
+		token = strtok(NULL, " ,()\t\n");
+        is_branch = 1;
+	} else if(strcmp(token, "BNEZ") == 0) {
+		token = strtok(NULL, " ,()RF\t\n");
+		token = strtok(NULL, " ,()RF\t\n");
+        is_branch = 1;
+	} else if(strcmp(token, "BEQ") == 0) {
+		token = strtok(NULL, " ,()RF\t\n");
+		token = strtok(NULL, " ,()RF\t\n");
+		token = strtok(NULL, " ,()RF\t\n");
+        is_branch = 1;
+	} else if(strcmp(token, "BNE") == 0) {
+		token = strtok(NULL, " ,()RF\t\n");
+		token = strtok(NULL, " ,()RF\t\n");
+		token = strtok(NULL, " ,()RF\t\n");
+        is_branch = 1;
+	} else {
+        instruction->branch_predicted = 0;
+        instruction->prediction_taken = 0;
+        instruction->prediction_target = 0;
+	    return 0;
 	}
+
+	if (is_branch) {
+		DictionaryEntry *codeLabel = getValueChainByDictionaryKey (codeLabels, (void *) token);
+
+		if (codeLabel == NULL) {
+			printf("Invalid code label cannot be resolved...\n");
+			exit (EXIT_FAILURE);
+		} else {
+            DictionaryEntry *dval = getValueChainByDictionaryKey(BTB, &(instruction->PC));
+            if(dval){
+                BTB_value *val = dval->value->value;
+                if(val->PC == instruction->PC){
+                    instruction->branch_predicted = 1;
+                    instruction->prediction_target = val->target_address;
+                    instruction->prediction_taken = val->taken;
+                    return 1;
+                }
+            }
+		}
+	}
+    return 0;
+}
+
+int runClockCycle_IF() {
+    int i;
+    if_unit->n_instructions = 0;
+    for(i=0; i<config->NF; i++){
+        if (if_unit->PC >= (instructionCacheBaseAddress + (cacheLineSize * numberOfInstruction))) { //check whether PC exceeds last instruction in cache
+            printf ("All instructions finished...\n");
+            return -1;
+        }
+
+
+        DictionaryEntry *currentInstruction = getValueChainByDictionaryKey (instructionCache, &(if_unit->PC));
+        if_unit->instructions[i] = (Instruction*)malloc(sizeof(Instruction));
+        initializeInstruction(if_unit->instructions[i]);
+        if_unit->instructions[i]->PC = if_unit->PC;
+        strncpy(if_unit->instructions[i]->instr, ((char*)currentInstruction -> value -> value), MAX_LINE);
+        printf ("Fetched %d:%s\n", if_unit->PC, if_unit->instructions[i]->instr);
+        if_unit->instructions[i]->is_valid = 1;
+        if(predecodeBranchInstruction(if_unit->instructions[i])){
+            if(if_unit->instructions[i]->prediction_taken)
+                if_unit->PC = if_unit->instructions[i]->prediction_target;
+            else
+                if_unit->PC = if_unit->PC + 4;
+        } else {
+            if_unit->PC = if_unit->PC + 4;
+        }
+        if_unit->n_instructions = i+1;
+    }
+    return 1;
 }
 
 int getHashCodeFromCacheAddress_IF (void *address) {
-    int mask = 0x00E0;
-    int result = *((int*)address) & mask;
-    result = result >> 4;
-    return result;
+    return (*((int*)address) & 0x3c) >> 2;
 }
 
 
-int compareBTBValues (void *btbvalue1, void *btbvalue2) {
-	if (((BTB_value*)btbvalue1)->target_address == ((BTB_value*)btbvalue2)->target_address && ((BTB_value*)btbvalue1)->taken == ((BTB_value*)btbvalue2)->taken) {
-		return 0;
-	}
-    return 1;
+int compareBTBValues (void *PC1, void *PC2) {
+    return (*((int*)PC1) & 0x3c)  - (*((int*)PC2) & 0x3c);
 }
+

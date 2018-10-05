@@ -3,6 +3,7 @@
 //
 
 #include "../Global/TomasuloSimulator.h"
+size_t getlinenew(char **linep, size_t *n, FILE *fp);
 
 void read_configfile(char *fileName) {
     char *line = (char *) malloc (sizeof(char) * MAX_LINE);
@@ -19,7 +20,7 @@ void read_configfile(char *fileName) {
         exit (EXIT_FAILURE);
     }
 
-    while ((read = getline(&line, &len, fp)) != -1) { //loop to read file line by line and tokenize
+    while ((read = getlinenew(&line, &len, fp)) != -1) { //loop to read file line by line and tokenize
         strcpy (tempLine, line);
         if ((tempLine = strtok(tempLine, WHITE_SPACE)) == NULL || *tempLine == 0) {
             continue;
