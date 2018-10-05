@@ -42,7 +42,7 @@ void initializeCPU () {
 	cpu -> intResult = 0;
 
 	cpu -> fpDestReg = 0;
-	cpu -> fpResult = 0; 
+	cpu -> fpResult = 0;
 }
 
 /**
@@ -57,9 +57,9 @@ int runClockCycle () {
 
 	if (cpu -> PC >= (instructionCacheBaseAddress + (cacheLineSize * numberOfInstruction))) { //check whether PC exceeds last instruction in cache
                 printf ("All instructions finished...\n");
-		return 0; 
-        } 
-	
+		return 0;
+        }
+
 	/*********** original fetch stage
         void *addrPtr = malloc(sizeof(int));
 	*((int*)addrPtr) = cpu -> PC;
@@ -72,7 +72,7 @@ int runClockCycle () {
         printf ("Fetched %d:%s\n", cpu -> PC, instruction_str);
 	***************/
 
-	fetch_instruction();
+	runClockCycle_IF();
 
 
 	/*************  original decode stage
@@ -80,18 +80,18 @@ int runClockCycle () {
 
         char *token = (char *) malloc (sizeof(char) * MAX_LINE);
 
-        OpCode op; 
+        OpCode op;
 
-        int rd; 
-        int rs; 
-        int rt; 
+        int rd;
+        int rs;
+        int rt;
 
         int rsValue;
         int rtValue;
 
-        int fd; 
-        int fs; 
-        int ft; 
+        int fd;
+        int fs;
+        int ft;
 
         double fsValue;
         double ftValue;
@@ -99,7 +99,7 @@ int runClockCycle () {
         int immediate;
 
         int target;
-        
+
 
 	op = NOOP, rd = -1, rs = -1, rt = -1, rsValue = -1, rtValue = -1, fd = -1, fs = -1, ft = -1, fsValue = -1, ftValue = -1, immediate = 0, target = 0;
 
@@ -393,7 +393,7 @@ int runClockCycle () {
 				cpu -> intResult = cpu -> integerRegisters [instruction -> rs] -> data & instruction -> immediate;
 				cpu -> integerRegisters [instruction -> rd] -> data = cpu -> intResult;
 				cpu -> PC = cpu -> PC + 4;
-				break;	
+				break;
 			case AND:
                                 cpu -> intResult = cpu -> integerRegisters [instruction -> rs] -> data & cpu -> integerRegisters [instruction -> rt] -> data;
 				cpu -> integerRegisters [instruction -> rd] -> data = cpu -> intResult;
@@ -404,7 +404,7 @@ int runClockCycle () {
 				cpu -> integerRegisters [instruction -> rd] -> data = cpu -> intResult;
 				cpu -> PC = cpu -> PC + 4;
 				break;
-                        case OR:                                                                                                                                                         
+                        case OR:
 				cpu -> intResult = cpu -> integerRegisters [instruction -> rs] -> data | cpu -> integerRegisters [instruction -> rt] -> data;
 				cpu -> integerRegisters [instruction -> rd] -> data = cpu -> intResult;
 				cpu -> PC = cpu -> PC + 4;
@@ -484,7 +484,7 @@ int runClockCycle () {
 				cpu -> PC = cpu -> PC + 4;
                                 break;
                         case SD:
-                                cpu -> memoryAddress = cpu -> integerRegisters [instruction -> rs] -> data + instruction -> immediate;                                                                   
+                                cpu -> memoryAddress = cpu -> integerRegisters [instruction -> rs] -> data + instruction -> immediate;
                                 cpu -> intResult = cpu -> integerRegisters [instruction -> rt] -> data ;
 
 				*((int*)addrPtr) = cpu -> memoryAddress;
@@ -506,7 +506,7 @@ int runClockCycle () {
 				cpu -> PC = cpu -> PC + 4;
                                 break;
 			case BNE:
-                                cpu -> intResult = cpu -> integerRegisters [instruction -> rs] -> data != cpu -> integerRegisters [instruction -> rt] -> data ? 0 : -1; 
+                                cpu -> intResult = cpu -> integerRegisters [instruction -> rs] -> data != cpu -> integerRegisters [instruction -> rt] -> data ? 0 : -1;
 				if (cpu -> intResult == 0) {
 					cpu -> PC = instruction -> target;
 				} else {
@@ -516,7 +516,7 @@ int runClockCycle () {
                         case BNEZ:
                                 cpu -> intResult = cpu -> integerRegisters [instruction -> rs] -> data != 0 ? 0 : -1;
 				if (cpu -> intResult == 0) {
-                                        cpu -> PC = instruction -> target;                                                                                                                
+                                        cpu -> PC = instruction -> target;
                                 } else {
 					cpu -> PC = cpu -> PC + 4;
 				}
@@ -524,7 +524,7 @@ int runClockCycle () {
                         case BEQ:
                                 cpu -> intResult = cpu -> integerRegisters [instruction -> rs] -> data == cpu -> integerRegisters [instruction -> rt] -> data ? 0 : -1;
 				if (cpu -> intResult == 0) {
-                                        cpu -> PC = instruction -> target;                                                                                                                
+                                        cpu -> PC = instruction -> target;
                                 } else {
 					cpu -> PC = cpu -> PC + 4;
 				}
@@ -532,11 +532,11 @@ int runClockCycle () {
                         case BEQZ:
                                 cpu -> intResult = cpu -> integerRegisters [instruction -> rs] -> data == 0 ? 0 : -1;
 				if (cpu -> intResult == 0) {
-                                        cpu -> PC = instruction -> target;                                                                                                                       
+                                        cpu -> PC = instruction -> target;
                                 } else {
 					cpu -> PC = cpu -> PC + 4;
 				}
-                                break;	
+                                break;
                         default:
                                 break;
                 }

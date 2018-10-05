@@ -13,6 +13,7 @@ int compareMemoryValues (void *value1, void *value2);
 
 int getHashCodeFromCodeLabel (void *codeLabel);
 int compareCodeLabelAddress (void *codeLabelAddress1, void *codeLabelAddress2);
+size_t getlinenew(char **linep, size_t *n, FILE *fp);
 
 /**
  * This function emulates loader. Fills instruction and data cache upon reading .DAT file.
@@ -46,7 +47,7 @@ void fillInstructionAndDataCache (char *fileName) {
 
 	numberOfInstruction = 0;
 
-	while ((read = getline(&line, &len, fp)) != -1) { //loop to read file line by line and tokenize
+	while ((read = getlinenew(&line, &len, fp)) != -1) { //loop to read file line by line and tokenize
 		strcpy (tempLine, line);
 
 		if ((tempLine = strtok(tempLine, WHITE_SPACE)) == NULL || *tempLine == 0)
@@ -162,4 +163,41 @@ int getHashCodeFromCodeLabel (void *codeLabel) {
  */
 int compareCodeLabelAddress (void *codeLabelAddress1, void *codeLabelAddress2) {
 	return *((int*)codeLabelAddress1)  - *((int*)codeLabelAddress2);
+}
+
+
+size_t getdelim(char **linep, size_t *n, int delim, FILE *fp){
+    int ch;
+    size_t i = 0;
+    if(!linep || !n || !fp){
+        //errno = EINVAL;
+        return -1;
+    }
+    if(*linep == NULL){
+        if(NULL==(*linep = malloc(*n=128))){
+            *n = 0;
+            //errno = ENOMEM;
+            return -1;
+        }
+    }
+    while((ch = fgetc(fp)) != EOF){
+        if(i + 1 >= *n){
+            char *temp = realloc(*linep, *n + 128);
+            if(!temp){
+                //errno = ENOMEM;
+                return -1;
+            }
+            *n += 128;
+            *linep = temp;
+        }
+        (*linep)[i++] = ch;
+        if(ch == delim)
+            break;
+    }
+    (*linep)[i] = '\0';
+    return !i && ch == EOF ? -1 : i;
+}
+
+size_t getlinenew(char **linep, size_t *n, FILE *fp){
+    return getdelim(linep, n, '\n', fp);
 }
