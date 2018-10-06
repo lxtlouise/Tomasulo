@@ -38,6 +38,8 @@ int main(int argc, char** argv) {
 
 	initializeIF_Unit(); // initialize IF unit
 
+	initializeDecode();
+
 	while (runClockCycle()); //loop emulating simulator clock cycles
 
 	printDataCache (); //print data cache

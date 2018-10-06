@@ -8,9 +8,10 @@ void initializeDecode() {
   instructionQueue = createCircularQueue(config -> NI);
 }
 
+int i;
 void decode(IF_Unit  *if_unit){
 
-  // for (int i = 0; i < if_unit->n_instructions; i++) {
+  // for (i = 0; i < if_unit->n_instructions; i++) {
   //   Instruction instruction = if_unit->instructions[i];
   //   decode_instruction(&instruction);
   //   enque_instrution_queue(&instruction);
@@ -332,7 +333,7 @@ void decode_instruction(Instruction *instr) {
 void enque_instrution_queue(Instruction *instruction) {
   instruction = (Instruction *) malloc(sizeof(Instruction));
   if (isFullCircularQueue(instructionQueue)) {
-    printf('Instrution queue is full.');
+    printf("Instrution queue is full.");
     return;
   } else {
     enqueueCircular(instructionQueue, instruction);

@@ -72,7 +72,18 @@ int runClockCycle () {
         printf ("Fetched %d:%s\n", cpu -> PC, instruction_str);
 	***************/
 
+
 	runClockCycle_IF();
+
+	// IF_Unit if_unit = fetch_instruction();
+	// decode(&if_unit);
+	Instruction * ins;
+	enque_instrution_queue(ins);
+	int count = getCountCircularQueue(instructionQueue);
+	ins = (Instruction *) dequeueCircular(instructionQueue);
+    printf("%d", count);
+		printf("%d", ins -> fd);
+
 
 
 	/*************  original decode stage

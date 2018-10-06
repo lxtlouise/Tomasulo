@@ -153,32 +153,42 @@ typedef struct _WBUnit {
 
 } WB_Unit;
 
-typedef struct INT_Unit {
+typedef struct _RS_Station {
+	int busy; //initialize as 0
+	OpCode op;
+	int vj; //initialize as -1
+	int vk; //initialize as -1
+	int qj; //initialize as -1
+	int qk; //initialize as -1
+	int destination; //ROB index
+	int a_immediate;
+	int a_register;
+	int target;
+} RS_Station;
 
-} INT;
+typedef enum ROB_state {
+	COMMIT,
+	WROTE_RESULT,
+	ISSUED_EXECUTING
+} ROB_state;
 
-typedef struct MULT_Unit {
+typedef struct _ROB_entry {
+	int index;
+	Instruction *instruction;
+	int valid; // 0 on creation
+	int int_renaming_register; // if fp instr, then -1
+	int fp_renaming_register; // if int instr, then -1
+	ROB_state rob_state;
+} ROB_entry;
 
-} MULT;
+typedef struct _Register_Status {
+	int *int_reg;
+	int *fp_reg;
+} Register_Status;
 
-typedef struct LOAD_STORE {
-
-} LS;
-
-typedef struct FPADD_Unit {
-
-} FPADD;
-
-typedef struct FPMULT_Unit {
-
-} FPMULT;
-
-typedef struct FPDIV_Unit {
-
-} FPDIV;
-
-typedef struct BU_UNIT {
-
-} BU;
+typedef struct _Renaming_Status {
+	int *int_rreg;
+	int *fp_rreg;
+} Renaming_Status;
 
 #endif /* GLOBAL_DATATYPES_H_ */
