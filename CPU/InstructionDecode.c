@@ -1,32 +1,14 @@
 # include "../Global/TomasuloSimulator.h"
 
-// Instruction * instruction;
-// char* instruction_str;
-
 void decode_instruction();
 void initializeDecode() {
   instructionQueue = createCircularQueue(config -> NI);
 }
 
-int i;
-void decode(IF_Unit  *if_unit){
+void decode_instruction(Instruction *instruction) {
+  char *instruction_str = (char *) malloc (sizeof(char) * MAX_LINE);
+  strcpy (instruction_str, instruction -> instr);
 
-  // for (i = 0; i < if_unit->n_instructions; i++) {
-  //   Instruction instruction = if_unit->instructions[i];
-  //   decode_instruction(&instruction);
-  //   enque_instrution_queue(&instruction);
-  //   int count = instructionQueue -> getCountCircularQueue;
-  //   printf("%d", count);
-  //
-  //  }
- }
-
-void decode_instruction(Instruction *instr) {
-  // char *instruction_str = (char *) malloc (sizeof(char) * MAX_LINE);
-  // strcpy (instruction_str, instr -> instr);
-  char* instruction_str = "MUL.D F0, F0, F2";
-
-  Instruction *instruction;
   char *token;
   OpCode op;
 
@@ -304,8 +286,6 @@ void decode_instruction(Instruction *instr) {
 		}
 	}
 
-	instruction = (Instruction *) malloc (sizeof(Instruction));
-
 	instruction -> op = op;
 
 	instruction -> rd = rd;
@@ -326,12 +306,10 @@ void decode_instruction(Instruction *instr) {
 
 	instruction -> target = target;
 
-	printf("Decoded %d:%s -> %s, rd=%d, rs=%d, rt=%d, fd=%d, fs=%d, ft=%d, immediate=%d, target=%d\n", cpu -> PC, instruction_str,
-		 getOpcodeString ((int) op), rd, rs, rt, fd, fs, ft, immediate, target);
+	
 }
 
 void enque_instrution_queue(Instruction *instruction) {
-  instruction = (Instruction *) malloc(sizeof(Instruction));
   if (isFullCircularQueue(instructionQueue)) {
     printf("Instrution queue is full.");
     return;
@@ -339,3 +317,15 @@ void enque_instrution_queue(Instruction *instruction) {
     enqueueCircular(instructionQueue, instruction);
   }
 }
+
+void decode(){
+	int i;
+	for (i = 0; i < if_unit -> n_instructions; i++) {
+		Instruction* instruction = if_unit -> instructions[i];
+		decode_instruction(instruction);
+		printf("Decoded %d:%s -> %s, rd=%d, rs=%d, rt=%d, fd=%d, fs=%d, ft=%d, immediate=%d, target=%d\n", instruction -> PC, instruction -> instr,
+			getOpcodeString ((int) instruction -> op), instruction -> rd, instruction -> rs, instruction -> rt, instruction -> fd, instruction -> fs, instruction -> ft, 
+			instruction -> immediate, instruction -> target);
+		enque_instrution_queue(instruction);
+	}
+ }

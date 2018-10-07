@@ -11,6 +11,7 @@ void initializeIssue() {
 	for (i = 0; i < RESERV_INT_SIZE; i++) {
 		rs_int[i] = (RS_Station *) malloc(sizeof(RS_Station));
 		rs_int[i] -> busy = 0;
+		rs_int[i] -> op = NOOP;
 		rs_int[i] -> vj = -1;
 		rs_int[i] -> vk = -1;
 		rs_int[i] -> qj = -1;
@@ -18,11 +19,13 @@ void initializeIssue() {
 		rs_int[i] -> destination = -1;
 		rs_int[i] -> a_immediate = -2147483648;
 		rs_int[i] -> a_register = -1;
+		rs_int[i] -> target = -1;
 	}
 	rs_mutl = (RS_Station **) malloc(sizeof(RS_Station *) * RESERV_MULT_SIZE);
 	for (i = 0; i < RESERV_MULT_SIZE; i++) {
 		rs_mutl[i] = (RS_Station *) malloc(sizeof(RS_Station));
 		rs_mutl[i] -> busy = 0;
+		rs_mutl[i] -> op = NOOP;
 		rs_mutl[i] -> vj = -1;
 		rs_mutl[i] -> vk = -1;
 		rs_mutl[i] -> qj = -1;
@@ -30,11 +33,13 @@ void initializeIssue() {
 		rs_mutl[i] -> destination = -1;
 		rs_mutl[i] -> a_immediate = -2147483648;
 		rs_mutl[i] -> a_register = -1;
+		rs_mutl[i] -> target = -1;
 	}
 	rs_load = (RS_Station **) malloc(sizeof(RS_Station *) * RESERV_LOAD_BUFFER_SIZE);
 	for (i = 0; i < RESERV_LOAD_BUFFER_SIZE; i++) {
 		rs_load[i] = (RS_Station *) malloc(sizeof(RS_Station));
 		rs_load[i] -> busy = 0;
+		rs_load[i] -> op = NOOP;
 		rs_load[i] -> vj = -1;
 		rs_load[i] -> vk = -1;
 		rs_load[i] -> qj = -1;
@@ -42,11 +47,13 @@ void initializeIssue() {
 		rs_load[i] -> destination = -1;
 		rs_load[i] -> a_immediate = -2147483648;
 		rs_load[i] -> a_register = -1;
+		rs_load[i] -> target = -1;
 	}
 	rs_save = (RS_Station **) malloc(sizeof(RS_Station *) * RESERV_STORE_BUFFER_SIZE);
 	for (i = 0; i < RESERV_STORE_BUFFER_SIZE; i++) {
 		rs_save[i] = (RS_Station *) malloc(sizeof(RS_Station));
 		rs_save[i] -> busy = 0;
+		rs_save[i] -> op = NOOP;
 		rs_save[i] -> vj = -1;
 		rs_save[i] -> vk = -1;
 		rs_save[i] -> qj = -1;
@@ -54,11 +61,13 @@ void initializeIssue() {
 		rs_save[i] -> destination = -1;
 		rs_save[i] -> a_immediate = -2147483648;
 		rs_save[i] -> a_register = -1;
+		rs_save[i] -> target = -1;
 	}
 	rs_fpadd = (RS_Station **) malloc(sizeof(RS_Station *) * RESERV_FPADD_SIZE);
 	for (i = 0; i < RESERV_FPADD_SIZE; i++) {
 		rs_fpadd[i] = (RS_Station *) malloc(sizeof(RS_Station));
 		rs_fpadd[i] -> busy = 0;
+		rs_fpadd[i] -> op = NOOP;
 		rs_fpadd[i] -> vj = -1;
 		rs_fpadd[i] -> vk = -1;
 		rs_fpadd[i] -> qj = -1;
@@ -66,11 +75,13 @@ void initializeIssue() {
 		rs_fpadd[i] -> destination = -1;
 		rs_fpadd[i] -> a_immediate = -2147483648;
 		rs_fpadd[i] -> a_register = -1;
+		rs_fpadd[i] -> target = -1;
 	}
 	rs_fpmutl = (RS_Station **) malloc(sizeof(RS_Station *) * RESERV_FPMULT_SIZE);
 	for (i = 0; i < RESERV_FPMULT_SIZE; i++) {
 		rs_fpmutl[i] = (RS_Station *) malloc(sizeof(RS_Station));
 		rs_fpmutl[i] -> busy = 0;
+		rs_fpmutl[i] -> op = NOOP;
 		rs_fpmutl[i] -> vj = -1;
 		rs_fpmutl[i] -> vk = -1;
 		rs_fpmutl[i] -> qj = -1;
@@ -78,11 +89,13 @@ void initializeIssue() {
 		rs_fpmutl[i] -> destination = -1;
 		rs_fpmutl[i] -> a_immediate = -2147483648;
 		rs_fpmutl[i] -> a_register = -1;
+		rs_fpmutl[i] -> target = -1;
 	}
 	rs_fpdiv = (RS_Station **) malloc(sizeof(RS_Station *) * RESERV_FPDIV_SIZE);
 	for (i = 0; i < RESERV_FPDIV_SIZE; i++) {
 		rs_fpdiv[i] = (RS_Station *) malloc(sizeof(RS_Station));
 		rs_fpdiv[i] -> busy = 0;
+		rs_fpdiv[i] -> op = NOOP;
 		rs_fpdiv[i] -> vj = -1;
 		rs_fpdiv[i] -> vk = -1;
 		rs_fpdiv[i] -> qj = -1;
@@ -90,11 +103,13 @@ void initializeIssue() {
 		rs_fpdiv[i] -> destination = -1;
 		rs_fpdiv[i] -> a_immediate = -2147483648;
 		rs_fpdiv[i] -> a_register = -1;
+		rs_fpdiv[i] -> target = -1;
 	}
 	rs_bu = (RS_Station **) malloc(sizeof(RS_Station *) * RESERV_BU_SIZE);
 	for (i = 0; i < RESERV_BU_SIZE; i++) {
 		rs_bu[i] = (RS_Station *) malloc(sizeof(RS_Station));
 		rs_bu[i] -> busy = 0;
+		rs_bu[i] -> op = NOOP;
 		rs_bu[i] -> vj = -1;
 		rs_bu[i] -> vk = -1;
 		rs_bu[i] -> qj = -1;
@@ -102,17 +117,18 @@ void initializeIssue() {
 		rs_bu[i] -> destination = -1;
 		rs_bu[i] -> a_immediate = -2147483648;
 		rs_bu[i] -> a_register = -1;
+		rs_bu[i] -> target = -1;
 	}
 
 	// initialize renaming_status
 	renaming_status = (Renaming_Status*) malloc(sizeof(Renaming_Status));
 	renaming_status -> int_rreg = (int*) malloc(sizeof(int) * RENAMING_INT_REGISTER_NUM);
 	for (i = 0; i < RENAMING_INT_REGISTER_NUM; i++) {
-		renaming_status -> int_rreg[i] = -1;
+		renaming_status -> int_rreg[i] = 0;
 	}
 	renaming_status -> fp_rreg = (int*) malloc(sizeof(int) * RENAMING_FP_REGISTER_NUM);
 	for (i = 0; i < RENAMING_FP_REGISTER_NUM; i++) {
-		renaming_status -> fp_rreg[i] = -1;
+		renaming_status -> fp_rreg[i] = 0;
 	}
 
 	// initialize register_status
@@ -210,7 +226,7 @@ int checkRegStates(int if_fp, int register_index) {
 }
 
 int checkROB() {
-	if (ROB -> size == config -> NR) {
+	if (ROB -> count == config -> NR) {
 		return -1;
 	} else {
 		return ROB -> tail;
@@ -227,6 +243,7 @@ int checkRenameRegister(Instruction *instruction) {
 		|| opcode == DSUB || opcode == DMUL || opcode == LD || opcode == SD) {
 		for(i = 0; i < RENAMING_INT_REGISTER_NUM; i++) {
 			if(renaming_status -> int_rreg[i] == 0) {
+				renaming_status -> int_rreg[i] = 1;
 				return i;
 			}
 		}
@@ -234,6 +251,7 @@ int checkRenameRegister(Instruction *instruction) {
 		|| opcode == MUL_D || opcode == DIV_D){
 		for(i = 0; i < RENAMING_FP_REGISTER_NUM; i++) {
 			if(renaming_status -> fp_rreg[i] == 0) {
+				renaming_status -> fp_rreg[i] = 1;
 				return i + RENAMING_INT_REGISTER_NUM;
 			}
 		}
@@ -432,12 +450,12 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			rs_station -> a_immediate = instruction -> immediate;
 			int rename_rs = checkRegStates(0, instruction -> rs);
 			if(rename_rs != -1) {
-				rs_station -> a_register = rename_rs;
+				rs_station -> a_register = rename_rs + numberOfIntRegisters; // if a_register >= numberOfIntRegisters, means this register is renamed to an ROB entry
 			} else {
 				rs_station -> a_register = instruction -> rs;
 			}
 			rs_station -> destination = rob_index;
-			updateRegisterStates(if_fp, instruction -> rt, rob_index);
+			updateRegisterStates(0, instruction -> rt, rob_index);
 		} else if(opcode == SD) {
 			rs_station = rs_save[rs_index];
 			rs_station -> busy = 1;
@@ -445,12 +463,12 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			rs_station -> a_immediate = instruction -> immediate;
 			int rename_rs = checkRegStates(0, instruction -> rs);
 			if(rename_rs != -1) {
-				rs_station -> a_register = rename_rs;
+				rs_station -> a_register = rename_rs + numberOfIntRegisters; // if a_register >= numberOfIntRegisters, means this register is renamed to an ROB entry
 			} else {
 				rs_station -> a_register = instruction -> rs;
 			}
 			rs_station -> destination = rob_index;
-			updateRegisterStates(if_fp, instruction -> rt, rob_index);
+			updateRegisterStates(0, instruction -> rt, rob_index);
 		} else if(opcode == L_D) {
 			rs_station = rs_load[rs_index];
 			rs_station -> busy = 1;
@@ -458,12 +476,12 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			rs_station -> a_immediate = instruction -> immediate;
 			int rename_rs = checkRegStates(0, instruction -> rs);
 			if(rename_rs != -1) {
-				rs_station -> a_register = rename_rs;
+				rs_station -> a_register = rename_rs + numberOfIntRegisters; // if a_register >= numberOfIntRegisters, means this register is renamed to an ROB entry
 			} else {
 				rs_station -> a_register = instruction -> rs;
 			}
 			rs_station -> destination = rob_index;
-			updateRegisterStates(if_fp, instruction -> ft, rob_index);
+			updateRegisterStates(1, instruction -> ft, rob_index);
 		} else if(opcode == S_D) {
 			rs_station = rs_save[rs_index];
 			rs_station -> busy = 1;
@@ -471,12 +489,12 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			rs_station -> a_immediate = instruction -> immediate;
 			int rename_rs = checkRegStates(0, instruction -> rs);
 			if(rename_rs != -1) {
-				rs_station -> a_register = rename_rs;
+				rs_station -> a_register = rename_rs + numberOfIntRegisters; // if a_register >= numberOfIntRegisters, means this register is renamed to an ROB entry
 			} else {
 				rs_station -> a_register = instruction -> rs;
 			}
 			rs_station -> destination = rob_index;
-			updateRegisterStates(if_fp, instruction -> ft, rob_index);
+			updateRegisterStates(1, instruction -> ft, rob_index);
 		} else if(opcode == ADD_D) {
 			rs_station = rs_fpadd[rs_index];
 			rs_station -> busy = 1;
@@ -628,7 +646,7 @@ void Issue() {
 	int queue_size;
 	int rob_size;
 	queue_size = instructionQueue -> size;
-	rob_size = ROB -> size;
+	rob_size = ROB -> count;
 	if (queue_size < nw){
 		nw = queue_size;
 	}
@@ -641,7 +659,7 @@ void Issue() {
 		Instruction *instruction = (Instruction *)dequeueCircular(instructionQueue);
 		int rename = checkRenameRegister(instruction);
 		if (rename == -1) {
-			printf("instruction stall");
+			printf("instruction stall1");
 			break;
 		}
 		int rob_index = checkROB();
@@ -651,7 +669,7 @@ void Issue() {
 		}
 		int rs_index = checkRSAvailability(instruction);
 		if(rs_index == -1) {
-			printf("instruction stall");
+			printf("instruction stall2");
 			break;
 		}
 
@@ -661,11 +679,13 @@ void Issue() {
 		rob_entry -> valid = 1;
 		rob_entry -> instruction = instruction;
 		if(rename != -2) {
-			if (rename > RENAMING_INT_REGISTER_NUM) {
+			if (rename >= RENAMING_INT_REGISTER_NUM) {
 				rob_entry -> fp_renaming_register = rename - RENAMING_INT_REGISTER_NUM;
+				rob_entry -> int_renaming_register = -1;
 			}
 			else {
 				rob_entry -> int_renaming_register = rename;
+				rob_entry -> fp_renaming_register = -1;
 			}
 		}
 		rob_entry -> index = instructionQueue -> tail;
@@ -675,4 +695,8 @@ void Issue() {
 
 
 	}
+	printRSStation();
+	printROB();
+	printRegisterState();
 }
+

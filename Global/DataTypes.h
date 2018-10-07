@@ -167,15 +167,20 @@ typedef struct _RS_Station {
 } RS_Station;
 
 typedef enum ROB_state {
-	COMMIT,
+	COMMITED,
 	WROTE_RESULT,
 	ISSUED_EXECUTING
 } ROB_state;
 
+static inline char* getROBState(int index) {
+	char *ROBStateString[3] = {"COMMITED", "WROTE_RESULT", "ISSUED_EXECUTING"};
+	return ROBStateString[index];
+}
+
 typedef struct _ROB_entry {
 	int index;
 	Instruction *instruction;
-	int valid; // 0 on creation
+	int valid; // 1 on creation
 	int int_renaming_register; // if fp instr, then -1
 	int fp_renaming_register; // if int instr, then -1
 	ROB_state rob_state;

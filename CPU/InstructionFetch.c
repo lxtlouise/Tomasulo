@@ -40,8 +40,8 @@ void copyInstruction(Instruction *dest, Instruction *src){
 	dest->prediction_target = src->prediction_target;
 }
 
-void initializeIF_Unit() {
-    if_unit = malloc(sizeof(IF_Unit));
+void initializeFetch() {
+    if_unit = (IF_Unit*) malloc(sizeof(IF_Unit));
     BTB = createDictionary(getHashCodeFromCacheAddress_IF, compareBTBValues);
     if_unit->PC = instructionCacheBaseAddress;
 }

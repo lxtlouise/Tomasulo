@@ -15,6 +15,9 @@ C_SRCS += \
 C_SRCS += \
 ../CPU/InstructionDecode.c
 
+C_SRCS += \
+../CPU/InstructionIssue.c
+
 OBJS += \
 ./CPU/CPU.o
 
@@ -26,6 +29,9 @@ OBJS += \
 
 OBJS += \
 ./CPU/InstructionFetch.o
+
+OBJS += \
+./CPU/InstructionIssue.o
 
 C_DEPS += \
 ./CPU/CPU.d

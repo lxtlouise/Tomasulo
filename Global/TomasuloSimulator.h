@@ -79,17 +79,17 @@ FPReg **renaming_fp_registers;
 Renaming_Status *renaming_status;
 
 
-int runClockCycle_IF();
-
-
 void fillInstructionAndDataCache (char *fileName);
 
 void setBTBEntry(Instruction* instruction, int branch_taken, int branch_target);
 
 void initializeCPU ();
-void initializeIF_Unit();
+void initializeFetch();
+void initializeDecode();
+void initializeIssue();
 
 int runClockCycle ();
+int runClockCycle_IF();
 void initializeInstruction(Instruction *instruction);
 void copyInstruction(Instruction *dest, Instruction *src);
 void decode();
@@ -101,6 +101,9 @@ void printCodeLabels ();
 void printDataCache ();
 void printIntegerRegisters ();
 void printFPRegisters ();
+void printRSStation();
+void printROB();
+void printRegisterState();
 
 void read_configfile(char * fileName);
 
