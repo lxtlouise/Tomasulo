@@ -42,6 +42,8 @@ int main(int argc, char** argv) {
 
 	initializeIssue();
 
+	initializeExecute();
+
 	while (runClockCycle()); //loop emulating simulator clock cycles
 
 	//printDataCache (); //print data cache

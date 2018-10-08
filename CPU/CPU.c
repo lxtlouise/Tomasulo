@@ -64,7 +64,7 @@ int runClockCycle () {
 	if (!_continue) return 0;
 	decode();
 	Issue();
-
+    runClockCycle_EX();
 	/******* original execute stage
 	void *valuePtr = malloc(sizeof(double));
 

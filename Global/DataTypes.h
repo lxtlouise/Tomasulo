@@ -141,10 +141,6 @@ typedef struct _IDUnit {
 	int n_instructions;
 } ID_Unit;
 
-typedef struct _EXUnit {
-
-} EX_Unit;
-
 typedef struct _MEMUnit {
 
 } MEM_Unit;
@@ -154,10 +150,13 @@ typedef struct _WBUnit {
 } WB_Unit;
 
 typedef struct _RS_Station {
+    int execution_state; //initialize as 0
 	int busy; //initialize as 0
 	OpCode op;
-	int vj; //initialize as -1
-	int vk; //initialize as -1
+	int vj; //value of operand 1
+	int vk; //value of operand 2
+	float vfj; //value of operand 1
+	float vfk; //value of operand 2
 	int qj; //initialize as -1
 	int qk; //initialize as -1
 	int destination; //ROB index
@@ -165,6 +164,17 @@ typedef struct _RS_Station {
 	int a_register;
 	int target;
 } RS_Station;
+
+typedef struct _EXUnit {
+    RS_Station* pipeline_stages_INT[1];
+    RS_Station* pipeline_stages_MULT[4];
+    RS_Station* pipeline_stages_MEM[1];
+    RS_Station* pipeline_stages_FPadd[3];
+    RS_Station* pipeline_stages_FPmult[4];
+    RS_Station* pipeline_stages_FPdiv[1];
+    RS_Station* pipeline_stages_BU[1];
+    RS_Station** allReservationStations;
+} EX_Unit;
 
 typedef enum ROB_state {
 	COMMITED,
