@@ -29,6 +29,8 @@ void decode_instruction(Instruction *instruction) {
   int immediate;
 
   int target;
+  int reg_target_int = -1;
+  int reg_target_fp = -1;
 
   op = NOOP, rd = -1, rs = -1, rt = -1, rsValue = -1, rtValue = -1, fd = -1, fs = -1, ft = -1, fsValue = -1, ftValue = -1, immediate = 0, target = 0;
 
@@ -49,6 +51,7 @@ void decode_instruction(Instruction *instruction) {
 
 		token = strtok(NULL, " ,()RF\t\n");
 		rt = atoi(token);
+		reg_target_int = rd;
 	} else if(strcmp(token, "ANDI") == 0) {
 		op = ANDI;
 
@@ -60,6 +63,7 @@ void decode_instruction(Instruction *instruction) {
 
 		token = strtok(NULL, " ,()RF\t\n");
 		immediate = atoi(token);
+		reg_target_int = rd;
 	} else if(strcmp(token, "OR") == 0) {
 		op = OR;
 
@@ -71,6 +75,7 @@ void decode_instruction(Instruction *instruction) {
 
 		token = strtok(NULL, " ,()RF\t\n");
 		rt = atoi(token);
+		reg_target_int = rd;
 	} else if(strcmp(token, "ORI") == 0) {
 		op = ORI;
 
@@ -82,6 +87,7 @@ void decode_instruction(Instruction *instruction) {
 
 		token = strtok(NULL, " ,()RF\t\n");
 		immediate = atoi(token);
+		reg_target_int = rd;
 	} else if(strcmp(token, "SLT") == 0) {
 		op = SLT;
 		token = strtok(NULL, " ,()RF\t\n");
@@ -92,6 +98,7 @@ void decode_instruction(Instruction *instruction) {
 
 		token = strtok(NULL, " ,()RF\t\n");
 		rt = atoi(token);
+		reg_target_int = rd;
 	} else if(strcmp(token, "SLTI") == 0) {
 		op = SLTI;
 
@@ -103,6 +110,7 @@ void decode_instruction(Instruction *instruction) {
 
 		token = strtok(NULL, " ,()RF\t\n");
 		immediate = atoi(token);
+		reg_target_int = rd;
 	} else if(strcmp(token, "DADD") == 0) {
 		op = DADD;
 
@@ -114,6 +122,7 @@ void decode_instruction(Instruction *instruction) {
 
 		token = strtok(NULL, " ,()RF\t\n");
 		rt = atoi(token);
+		reg_target_int = rd;
 	} else if(strcmp(token, "DADDI") == 0) {
 		op = DADDI;
 
@@ -126,6 +135,7 @@ void decode_instruction(Instruction *instruction) {
 		token = strtok(NULL, " ,()RF\t\n");
 
 		immediate = atoi(token);
+		reg_target_int = rd;
 	} else if(strcmp(token, "DSUB") == 0) {
 		op = DSUB;
 
@@ -137,6 +147,7 @@ void decode_instruction(Instruction *instruction) {
 
 		token = strtok(NULL, " ,()RF\t\n");
 		rt = atoi(token);
+		reg_target_int = rd;
 	} else if(strcmp(token, "DMUL") == 0) {
 		op = DMUL;
 
@@ -148,6 +159,7 @@ void decode_instruction(Instruction *instruction) {
 
 		token = strtok(NULL, " ,()RF\t\n");
 		rt = atoi(token);
+		reg_target_int = rd;
 	} else if(strcmp(token, "LD") == 0) {
 		op = LD;
 
@@ -159,6 +171,7 @@ void decode_instruction(Instruction *instruction) {
 
 		token = strtok(NULL, " ,()RF\t\n");
 		rs = atoi(token);
+		reg_target_int = rt;
 	} else if(strcmp(token, "SD") == 0) {
 		op = SD;
 
@@ -181,6 +194,7 @@ void decode_instruction(Instruction *instruction) {
 
 		token = strtok(NULL, " ,()RF\t\n");
 		rs = atoi(token);
+		reg_target_fp = ft;
 	} else if(strcmp(token, "S.D") == 0) {
 		op = S_D;
 
@@ -203,6 +217,7 @@ void decode_instruction(Instruction *instruction) {
 
 		token = strtok(NULL, " ,()RF\t\n");
 		ft = atoi(token);
+		reg_target_fp = fd;
 	} else if(strcmp(token, "SUB.D") == 0) {
 		op = SUB_D;
 
@@ -214,6 +229,7 @@ void decode_instruction(Instruction *instruction) {
 
 		token = strtok(NULL, " ,()RF\t\n");
 		ft = atoi(token);
+		reg_target_fp = fd;
 	} else if(strcmp(token, "MUL.D") == 0) {
 		op = MUL_D;
 
@@ -225,6 +241,7 @@ void decode_instruction(Instruction *instruction) {
 
 		token = strtok(NULL, " ,()RF\t\n");
 		ft = atoi(token);
+		reg_target_fp = fd;
 	} else if(strcmp(token, "DIV.D") == 0) {
 		op = DIV_D;
 
@@ -236,6 +253,7 @@ void decode_instruction(Instruction *instruction) {
 
 		token = strtok(NULL, " ,()RF\t\n");
 		ft = atoi(token);
+		reg_target_fp = fd;
 	} else if(strcmp(token, "BEQZ") == 0) {
 		op = BEQZ;
 
@@ -306,7 +324,8 @@ void decode_instruction(Instruction *instruction) {
 
 	instruction -> target = target;
 
-	
+    instruction -> reg_target_int = reg_target_int;
+    instruction -> reg_target_fp = reg_target_fp;
 }
 
 void enque_instrution_queue(Instruction *instruction) {
@@ -322,9 +341,11 @@ void decode(){
 	int i;
 	for (i = 0; i < if_unit -> n_instructions; i++) {
 		Instruction* instruction = if_unit -> instructions[i];
+		if(instruction==NULL || instruction->is_valid==0)
+            break;
 		decode_instruction(instruction);
 		printf("Decoded %d:%s -> %s, rd=%d, rs=%d, rt=%d, fd=%d, fs=%d, ft=%d, immediate=%d, target=%d\n", instruction -> PC, instruction -> instr,
-			getOpcodeString ((int) instruction -> op), instruction -> rd, instruction -> rs, instruction -> rt, instruction -> fd, instruction -> fs, instruction -> ft, 
+			getOpcodeString ((int) instruction -> op), instruction -> rd, instruction -> rs, instruction -> rt, instruction -> fd, instruction -> fs, instruction -> ft,
 			instruction -> immediate, instruction -> target);
 		enque_instrution_queue(instruction);
 	}

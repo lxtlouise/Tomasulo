@@ -73,6 +73,8 @@ typedef struct _instruction {
 	int immediate;
 
 	int target;
+	int reg_target_int;
+	int reg_target_fp;
 
 	int is_valid;
 
@@ -159,6 +161,8 @@ typedef struct _RS_Station {
 	float vfk; //value of operand 2
 	int qj; //initialize as -1
 	int qk; //initialize as -1
+	int qfj; //initialize as -1
+	int qfk; //initialize as -1
 	int destination; //ROB index
 	int a_immediate;
 	int a_register;
@@ -194,6 +198,8 @@ typedef struct _ROB_entry {
 	int int_renaming_register; // if fp instr, then -1
 	int fp_renaming_register; // if int instr, then -1
 	ROB_state rob_state;
+	int int_result;
+	float float_result;
 } ROB_entry;
 
 typedef struct _Register_Status {

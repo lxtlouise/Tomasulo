@@ -16,6 +16,8 @@ void initializeIssue() {
 		rs_int[i] -> vk = -1;
 		rs_int[i] -> qj = -1;
 		rs_int[i] -> qk = -1;
+		rs_int[i] -> qfj = -1;
+		rs_int[i] -> qfk = -1;
 		rs_int[i] -> destination = -1;
 		rs_int[i] -> a_immediate = -2147483648;
 		rs_int[i] -> a_register = -1;
@@ -30,6 +32,8 @@ void initializeIssue() {
 		rs_mutl[i] -> vk = -1;
 		rs_mutl[i] -> qj = -1;
 		rs_mutl[i] -> qk = -1;
+		rs_mutl[i] -> qfj = -1;
+		rs_mutl[i] -> qfk = -1;
 		rs_mutl[i] -> destination = -1;
 		rs_mutl[i] -> a_immediate = -2147483648;
 		rs_mutl[i] -> a_register = -1;
@@ -44,6 +48,8 @@ void initializeIssue() {
 		rs_load[i] -> vk = -1;
 		rs_load[i] -> qj = -1;
 		rs_load[i] -> qk = -1;
+		rs_load[i] -> qfj = -1;
+		rs_load[i] -> qfk = -1;
 		rs_load[i] -> destination = -1;
 		rs_load[i] -> a_immediate = -2147483648;
 		rs_load[i] -> a_register = -1;
@@ -58,6 +64,8 @@ void initializeIssue() {
 		rs_save[i] -> vk = -1;
 		rs_save[i] -> qj = -1;
 		rs_save[i] -> qk = -1;
+		rs_save[i] -> qfj = -1;
+		rs_save[i] -> qfk = -1;
 		rs_save[i] -> destination = -1;
 		rs_save[i] -> a_immediate = -2147483648;
 		rs_save[i] -> a_register = -1;
@@ -72,6 +80,8 @@ void initializeIssue() {
 		rs_fpadd[i] -> vk = -1;
 		rs_fpadd[i] -> qj = -1;
 		rs_fpadd[i] -> qk = -1;
+		rs_fpadd[i] -> qfj = -1;
+		rs_fpadd[i] -> qfk = -1;
 		rs_fpadd[i] -> destination = -1;
 		rs_fpadd[i] -> a_immediate = -2147483648;
 		rs_fpadd[i] -> a_register = -1;
@@ -86,6 +96,8 @@ void initializeIssue() {
 		rs_fpmutl[i] -> vk = -1;
 		rs_fpmutl[i] -> qj = -1;
 		rs_fpmutl[i] -> qk = -1;
+		rs_fpmutl[i] -> qfj = -1;
+		rs_fpmutl[i] -> qfk = -1;
 		rs_fpmutl[i] -> destination = -1;
 		rs_fpmutl[i] -> a_immediate = -2147483648;
 		rs_fpmutl[i] -> a_register = -1;
@@ -100,6 +112,8 @@ void initializeIssue() {
 		rs_fpdiv[i] -> vk = -1;
 		rs_fpdiv[i] -> qj = -1;
 		rs_fpdiv[i] -> qk = -1;
+		rs_fpdiv[i] -> qfj = -1;
+		rs_fpdiv[i] -> qfk = -1;
 		rs_fpdiv[i] -> destination = -1;
 		rs_fpdiv[i] -> a_immediate = -2147483648;
 		rs_fpdiv[i] -> a_register = -1;
@@ -114,6 +128,8 @@ void initializeIssue() {
 		rs_bu[i] -> vk = -1;
 		rs_bu[i] -> qj = -1;
 		rs_bu[i] -> qk = -1;
+		rs_bu[i] -> qfj = -1;
+		rs_bu[i] -> qfk = -1;
 		rs_bu[i] -> destination = -1;
 		rs_bu[i] -> a_immediate = -2147483648;
 		rs_bu[i] -> a_register = -1;
@@ -263,9 +279,9 @@ int checkRenameRegister(Instruction *instruction) {
 
 void updateRegisterStates(int if_fp, int register_index, int rob_index) {
 	if(if_fp) {
-		register_status -> fp_reg[register_index] = rob_index;
+		register_status -> fp_reg[register_index] = ((ROB_entry*)(ROB->items[rob_index]))->fp_renaming_register;
 	} else {
-		register_status -> int_reg[register_index] = rob_index;
+		register_status -> int_reg[register_index] = ((ROB_entry*)(ROB->items[rob_index]))->int_renaming_register;
 	}
 }
 
@@ -277,7 +293,7 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			rs_station = rs_int[rs_index];
 			rs_station -> execution_state = 0;
 			rs_station -> busy = 1;
-			rs_station -> qj = rs_station -> qk = 0;
+			rs_station -> qj = rs_station -> qk = -1;
 			rs_station -> op = opcode;
 			int rename_rs = checkRegStates(if_fp, instruction -> rs);
 			int rename_rt = checkRegStates(if_fp, instruction -> rt);
@@ -293,12 +309,12 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			}
 
 			rs_station -> destination = rob_index;
-			updateRegisterStates(if_fp, instruction -> rd, rob_index); //update register states using the rob index of the result register
+			updateRegisterStates(if_fp, instruction -> reg_target_int, rob_index); //update register states using the rob index of the result register
 		} else if(opcode == ANDI) {
 			rs_station = rs_int[rs_index];
 			rs_station -> execution_state = 0;
 			rs_station -> busy = 1;
-			rs_station -> qj = rs_station -> qk = 0;
+			rs_station -> qj = rs_station -> qk = -1;
 			rs_station -> op = opcode;
 			int rename_rs = checkRegStates(if_fp, instruction -> rs);
 			if(rename_rs != -1) {
@@ -309,12 +325,12 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			rs_station -> vk = instruction -> immediate;
 
 			rs_station -> destination = rob_index;
-			updateRegisterStates(if_fp, instruction -> rd, rob_index);
+			updateRegisterStates(if_fp, instruction -> reg_target_int, rob_index);
 		} else if(opcode == OR) {
 			rs_station = rs_int[rs_index];
 			rs_station -> execution_state = 0;
 			rs_station -> busy = 1;
-			rs_station -> qj = rs_station -> qk = 0;
+			rs_station -> qj = rs_station -> qk = -1;
 			rs_station -> op = opcode;
 			int rename_rs = checkRegStates(if_fp, instruction -> rs);
 			int rename_rt = checkRegStates(if_fp, instruction -> rt);
@@ -330,12 +346,12 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			}
 
 			rs_station -> destination = rob_index;
-			updateRegisterStates(if_fp, instruction -> rd, rob_index);
+			updateRegisterStates(if_fp, instruction -> reg_target_int, rob_index);
 		} else if(opcode == ORI) {
 			rs_station = rs_int[rs_index];
 			rs_station -> execution_state = 0;
 			rs_station -> busy = 1;
-			rs_station -> qj = rs_station -> qk = 0;
+			rs_station -> qj = rs_station -> qk = -1;
 			rs_station -> op = opcode;
 			int rename_rs = checkRegStates(if_fp, instruction -> rs);
 			if(rename_rs != -1) {
@@ -346,12 +362,12 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			rs_station -> vk = instruction -> immediate;
 
 			rs_station -> destination = rob_index;
-			updateRegisterStates(if_fp, instruction -> rd, rob_index);
+			updateRegisterStates(if_fp, instruction -> reg_target_int, rob_index);
 		} else if(opcode == SLT) {
 			rs_station = rs_int[rs_index];
 			rs_station -> execution_state = 0;
 			rs_station -> busy = 1;
-			rs_station -> qj = rs_station -> qk = 0;
+			rs_station -> qj = rs_station -> qk = -1;
 			rs_station -> op = opcode;
 			int rename_rs = checkRegStates(if_fp, instruction -> rs);
 			int rename_rt = checkRegStates(if_fp, instruction -> rt);
@@ -367,12 +383,12 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			}
 
 			rs_station -> destination = rob_index;
-			updateRegisterStates(if_fp, instruction -> rd, rob_index);
+			updateRegisterStates(if_fp, instruction -> reg_target_int, rob_index);
 		} else if(opcode == SLTI) {
 			rs_station = rs_int[rs_index];
 			rs_station -> execution_state = 0;
 			rs_station -> busy = 1;
-			rs_station -> qj = rs_station -> qk = 0;
+			rs_station -> qj = rs_station -> qk = -1;
 			rs_station -> op = opcode;
 			int rename_rs = checkRegStates(if_fp, instruction -> rs);
 			if(rename_rs != -1) {
@@ -383,12 +399,12 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			rs_station -> vk = instruction -> immediate;
 
 			rs_station -> destination = rob_index;
-			updateRegisterStates(if_fp, instruction -> rd, rob_index);
+			updateRegisterStates(if_fp, instruction -> reg_target_int, rob_index);
 		} else if(opcode == DADD) {
 			rs_station = rs_int[rs_index];
 			rs_station -> execution_state = 0;
 			rs_station -> busy = 1;
-			rs_station -> qj = rs_station -> qk = 0;
+			rs_station -> qj = rs_station -> qk = -1;
 			rs_station -> op = opcode;
 			int rename_rs = checkRegStates(if_fp, instruction -> rs);
 			int rename_rt = checkRegStates(if_fp, instruction -> rt);
@@ -404,12 +420,12 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			}
 
 			rs_station -> destination = rob_index;
-			updateRegisterStates(if_fp, instruction -> rd, rob_index);
+			updateRegisterStates(if_fp, instruction -> reg_target_int, rob_index);
 		} else if(opcode == DADDI) {
 			rs_station = rs_int[rs_index];
 			rs_station -> execution_state = 0;
 			rs_station -> busy = 1;
-			rs_station -> qj = rs_station -> qk = 0;
+			rs_station -> qj = rs_station -> qk = -1;
 			rs_station -> op = opcode;
 			int rename_rs = checkRegStates(if_fp, instruction -> rs);
 			if(rename_rs != -1) {
@@ -420,12 +436,12 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			rs_station -> vk = instruction -> immediate;
 
 			rs_station -> destination = rob_index;
-			updateRegisterStates(if_fp, instruction -> rd, rob_index);
+			updateRegisterStates(if_fp, instruction -> reg_target_int, rob_index);
 		} else if(opcode == DSUB) {
 			rs_station = rs_int[rs_index];
 			rs_station -> execution_state = 0;
 			rs_station -> busy = 1;
-			rs_station -> qj = rs_station -> qk = 0;
+			rs_station -> qj = rs_station -> qk = -1;
 			rs_station -> op = opcode;
 			int rename_rs = checkRegStates(if_fp, instruction -> rs);
 			int rename_rt = checkRegStates(if_fp, instruction -> rt);
@@ -441,12 +457,12 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			}
 
 			rs_station -> destination = rob_index;
-			updateRegisterStates(if_fp, instruction -> rd, rob_index);
+			updateRegisterStates(if_fp, instruction -> reg_target_int, rob_index);
 		} else if(opcode == DMUL) {
 			rs_station = rs_mutl[rs_index];
 			rs_station -> execution_state = 0;
 			rs_station -> busy = 1;
-			rs_station -> qj = rs_station -> qk = 0;
+			rs_station -> qj = rs_station -> qk = -1;
 			rs_station -> op = opcode;
 			int rename_rs = checkRegStates(if_fp, instruction -> rs);
 			int rename_rt = checkRegStates(if_fp, instruction -> rt);
@@ -462,27 +478,33 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			}
 
 			rs_station -> destination = rob_index;
-			updateRegisterStates(if_fp, instruction -> rd, rob_index);
+			updateRegisterStates(if_fp, instruction -> reg_target_int, rob_index);
 		} else if(opcode == LD) {
 			rs_station = rs_load[rs_index];
 			rs_station -> execution_state = 0;
 			rs_station -> busy = 1;
-			rs_station -> qj = rs_station -> qk = 0;
+			rs_station -> qj = rs_station -> qk = -1;
 			rs_station -> op = opcode;
 			rs_station -> a_immediate = instruction -> immediate;
 			int rename_rs = checkRegStates(0, instruction -> rs);
 			if(rename_rs != -1) {
+				rs_station -> qj = rename_rs;
+			} else {
+				rs_station -> vj = cpu->integerRegisters[instruction -> rs]->data;
+			}
+			rs_station -> vk = instruction -> immediate;
+			/*if(rename_rs != -1) {
 				rs_station -> a_register = rename_rs + numberOfIntRegisters; // if a_register >= numberOfIntRegisters, means this register is renamed to an ROB entry
 			} else {
 				rs_station -> a_register = instruction -> rs;
-			}
+			}*/
 			rs_station -> destination = rob_index;
-			updateRegisterStates(0, instruction -> rt, rob_index);
+			updateRegisterStates(0, instruction -> reg_target_int, rob_index);
 		} else if(opcode == SD) {
 			rs_station = rs_save[rs_index];
 			rs_station -> execution_state = 0;
 			rs_station -> busy = 1;
-			rs_station -> qj = rs_station -> qk = 0;
+			rs_station -> qj = rs_station -> qk = -1;
 			rs_station -> op = opcode;
 			rs_station -> a_immediate = instruction -> immediate;
 			int rename_rs = checkRegStates(0, instruction -> rs);
@@ -492,27 +514,34 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 				rs_station -> a_register = instruction -> rs;
 			}
 			rs_station -> destination = rob_index;
-			updateRegisterStates(0, instruction -> rt, rob_index);
+			//updateRegisterStates(0, instruction -> reg_target_int, rob_index);
 		} else if(opcode == L_D) {
 			rs_station = rs_load[rs_index];
 			rs_station -> execution_state = 0;
 			rs_station -> busy = 1;
-			rs_station -> qj = rs_station -> qk = 0;
+			rs_station -> qj = rs_station -> qk = -1;
 			rs_station -> op = opcode;
 			rs_station -> a_immediate = instruction -> immediate;
 			int rename_rs = checkRegStates(0, instruction -> rs);
 			if(rename_rs != -1) {
+				rs_station -> qj = rename_rs;
+			} else {
+				rs_station -> vj = cpu->integerRegisters[instruction -> rs]->data;
+			}
+			rs_station -> vk = instruction -> immediate;
+			/*if(rename_rs != -1) {
 				rs_station -> a_register = rename_rs + numberOfIntRegisters; // if a_register >= numberOfIntRegisters, means this register is renamed to an ROB entry
 			} else {
 				rs_station -> a_register = instruction -> rs;
-			}
+			}*/
 			rs_station -> destination = rob_index;
-			updateRegisterStates(1, instruction -> ft, rob_index);
+			updateRegisterStates(1, instruction -> reg_target_fp, rob_index);
 		} else if(opcode == S_D) {
 			rs_station = rs_save[rs_index];
 			rs_station -> execution_state = 0;
 			rs_station -> busy = 1;
-			rs_station -> qj = rs_station -> qk = 0;
+			rs_station -> qj = rs_station -> qk = -1;
+			rs_station -> qfj = -1;
 			rs_station -> op = opcode;
 			rs_station -> a_immediate = instruction -> immediate;
 			int rename_rs = checkRegStates(0, instruction -> rs);
@@ -522,12 +551,12 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 				rs_station -> a_register = instruction -> rs;
 			}
 			rs_station -> destination = rob_index;
-			updateRegisterStates(1, instruction -> ft, rob_index);
+			//updateRegisterStates(1, instruction -> ft, rob_index);
 		} else if(opcode == ADD_D) {
 			rs_station = rs_fpadd[rs_index];
 			rs_station -> execution_state = 0;
 			rs_station -> busy = 1;
-			rs_station -> qj = rs_station -> qk = 0;
+			rs_station -> qfj = rs_station -> qfk = -1;
 			rs_station -> op = opcode;
 			int rename_rs = checkRegStates(if_fp, instruction -> rs);
 			int rename_rt = checkRegStates(if_fp, instruction -> rt);
@@ -543,12 +572,12 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			}
 
 			rs_station -> destination = rob_index;
-			updateRegisterStates(if_fp, instruction -> fd, rob_index);
+			updateRegisterStates(if_fp, instruction -> reg_target_fp, rob_index);
 		} else if(opcode == SUB_D) {
 			rs_station = rs_fpadd[rs_index];
 			rs_station -> execution_state = 0;
 			rs_station -> busy = 1;
-			rs_station -> qj = rs_station -> qk = 0;
+			rs_station -> qfj = rs_station -> qfk = -1;
 			rs_station -> op = opcode;
 			int rename_rs = checkRegStates(if_fp, instruction -> rs);
 			int rename_rt = checkRegStates(if_fp, instruction -> rt);
@@ -564,12 +593,12 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			}
 
 			rs_station -> destination = rob_index;
-			updateRegisterStates(if_fp, instruction -> fd, rob_index);
+			updateRegisterStates(if_fp, instruction -> reg_target_fp, rob_index);
 		} else if(opcode == MUL_D) {
 			rs_station = rs_fpmutl[rs_index];
 			rs_station -> execution_state = 0;
 			rs_station -> busy = 1;
-			rs_station -> qj = rs_station -> qk = 0;
+			rs_station -> qfj = rs_station -> qfk = -1;
 			rs_station -> op = opcode;
 			int rename_rs = checkRegStates(if_fp, instruction -> rs);
 			int rename_rt = checkRegStates(if_fp, instruction -> rt);
@@ -585,12 +614,12 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			}
 
 			rs_station -> destination = rob_index;
-			updateRegisterStates(if_fp, instruction -> fd, rob_index);
+			updateRegisterStates(if_fp, instruction -> reg_target_fp, rob_index);
 		} else if(opcode == DIV_D) {
 			rs_station = rs_fpdiv[rs_index];
 			rs_station -> execution_state = 0;
 			rs_station -> busy = 1;
-			rs_station -> qj = rs_station -> qk = 0;
+			rs_station -> qfj = rs_station -> qfk = -1;
 			rs_station -> op = opcode;
 			int rename_rs = checkRegStates(if_fp, instruction -> rs);
 			int rename_rt = checkRegStates(if_fp, instruction -> rt);
@@ -606,12 +635,12 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			}
 
 			rs_station -> destination = rob_index;
-			updateRegisterStates(if_fp, instruction -> fd, rob_index);
+			updateRegisterStates(if_fp, instruction -> reg_target_fp, rob_index);
 		} else if(opcode == BEQZ) {
 			rs_station = rs_bu[rs_index];
 			rs_station -> execution_state = 0;
 			rs_station -> busy = 1;
-			rs_station -> qj = rs_station -> qk = 0;
+			rs_station -> qj = rs_station -> qk = -1;
 			rs_station -> op = opcode;
 			int rename_rs = checkRegStates(0, instruction -> rs);
 			if(rename_rs != -1) {
@@ -626,7 +655,7 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			rs_station = rs_bu[rs_index];
 			rs_station -> execution_state = 0;
 			rs_station -> busy = 1;
-			rs_station -> qj = rs_station -> qk = 0;
+			rs_station -> qj = rs_station -> qk = -1;
 			rs_station -> op = opcode;
 			int rename_rs = checkRegStates(0, instruction -> rs);
 			if(rename_rs != -1) {
@@ -641,7 +670,7 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			rs_station = rs_bu[rs_index];
 			rs_station -> execution_state = 0;
 			rs_station -> busy = 1;
-			rs_station -> qj = rs_station -> qk = 0;
+			rs_station -> qj = rs_station -> qk = -1;
 			rs_station -> op = opcode;
 			int rename_rs = checkRegStates(if_fp, instruction -> rs);
 			int rename_rt = checkRegStates(if_fp, instruction -> rt);
@@ -662,7 +691,7 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			rs_station = rs_bu[rs_index];
 			rs_station -> execution_state = 0;
 			rs_station -> busy = 1;
-			rs_station -> qj = rs_station -> qk = 0;
+			rs_station -> qj = rs_station -> qk = -1;
 			rs_station -> op = opcode;
 			int rename_rs = checkRegStates(if_fp, instruction -> rs);
 			int rename_rt = checkRegStates(if_fp, instruction -> rt);
@@ -701,6 +730,8 @@ void Issue() {
 	int i;
 	for (i = 0; i < nw; i++) {
 		Instruction *instruction = (Instruction *)dequeueCircular(instructionQueue);
+		if(instruction==NULL)
+            break;
 		int rename = checkRenameRegister(instruction);
 		if (rename == -1) {
 			printf("instruction stall1");
@@ -716,8 +747,6 @@ void Issue() {
 			printf("instruction stall2");
 			break;
 		}
-
-		updateRS(instruction, rs_index, rob_index);
 
 		ROB_entry *rob_entry = (ROB_entry *) malloc(sizeof(ROB_entry));
 		rob_entry -> valid = 1;
@@ -737,6 +766,7 @@ void Issue() {
 
 		enqueueCircular(ROB, rob_entry);
 
+		updateRS(instruction, rs_index, rob_index);
 
 	}
 	printRSStation();
