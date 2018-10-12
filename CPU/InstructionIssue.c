@@ -761,7 +761,7 @@ void Issue() {
 				rob_entry -> fp_renaming_register = -1;
 			}
 		}
-		rob_entry -> index = instructionQueue -> tail;
+		rob_entry -> index = ROB -> tail;
 		rob_entry -> rob_state = ISSUED_EXECUTING;
 
 		enqueueCircular(ROB, rob_entry);
