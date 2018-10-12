@@ -166,7 +166,7 @@ int compareCodeLabelAddress (void *codeLabelAddress1, void *codeLabelAddress2) {
 }
 
 
-size_t _getdelim(char **linep, size_t *n, int delim, FILE *fp){
+size_t _getdelim_(char **linep, size_t *n, int delim, FILE *fp){
     int ch;
     size_t i = 0;
     if(!linep || !n || !fp){
@@ -199,5 +199,5 @@ size_t _getdelim(char **linep, size_t *n, int delim, FILE *fp){
 }
 
 size_t getlinenew(char **linep, size_t *n, FILE *fp){
-    return _getdelim(linep, n, '\n', fp);
+    return _getdelim_(linep, n, '\n', fp);
 }

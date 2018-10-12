@@ -58,6 +58,8 @@ int cacheLineSize; //CLS
 
 int numberOfInstruction;
 
+int CDB_counter;
+
 Dictionary *instructionCache;
 Dictionary *dataCache;
 Dictionary *codeLabels;
@@ -96,6 +98,7 @@ void initializeCPU ();
 void initializeFetch();
 void initializeDecode();
 void initializeIssue();
+void initializeExecute();
 
 int runClockCycle ();
 int runClockCycle_IF();
@@ -103,6 +106,8 @@ void initializeInstruction(Instruction *instruction);
 void copyInstruction(Instruction *dest, Instruction *src);
 void decode();
 void Issue();
+
+void commit();
 
 
 void printInstructionCache ();

@@ -18,6 +18,12 @@ C_SRCS += \
 C_SRCS += \
 ../CPU/InstructionIssue.c
 
+C_SRCS += \
+../CPU/InstructionExecute.c
+
+C_SRCS += \
+../CPU/InstructionCommit.c
+
 OBJS += \
 ./CPU/CPU.o
 
@@ -32,6 +38,12 @@ OBJS += \
 
 OBJS += \
 ./CPU/InstructionIssue.o
+
+OBJS += \
+./CPU?InstructionExecute.o
+
+OBJS += \
+./CPU/InstructionCommit.o
 
 C_DEPS += \
 ./CPU/CPU.d

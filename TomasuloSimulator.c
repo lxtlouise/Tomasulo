@@ -14,6 +14,8 @@ int instructionCacheBaseAddress = 1000; //ICBA
 
 int cacheLineSize = 4; //CLS
 
+int CDB_counter = 0;
+
 
 int main(int argc, char** argv) {
 
