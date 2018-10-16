@@ -105,7 +105,7 @@ void initializeInstruction(Instruction *instruction);
 void copyInstruction(Instruction *dest, Instruction *src);
 void decode();
 void Issue();
-
+void runClockCycle_EX();
 void commit();
 
 
