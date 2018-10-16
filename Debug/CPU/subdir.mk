@@ -40,7 +40,7 @@ OBJS += \
 ./CPU/InstructionIssue.o
 
 OBJS += \
-./CPU?InstructionExecute.o
+./CPU/InstructionExecute.o
 
 OBJS += \
 ./CPU/InstructionCommit.o

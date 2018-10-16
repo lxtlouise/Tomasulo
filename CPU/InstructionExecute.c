@@ -75,6 +75,8 @@ void propagateResult(RS_Station *rs_station, int int_result, float float_result,
 
 void execute_operation(RS_Station *rs_station, int *iresult, float *fresult, int *aresult);
 
+void executeBranch(RS_Station *rs_station);
+
 void runClockCycle_EX(){
     int cdb_usage = 0;
     int cdb_sz = config->NB - CDB_counter;
