@@ -238,7 +238,8 @@ void runClockCycle_EX(){
                 ex_unit->pipeline_stages_FPadd[j] = NULL;
 
                 for(i=0; i<RESERV_FPADD_SIZE; i++){
-                    rs_station = rs_mutl[i];
+                    rs_station = rs_fpadd[i];
+
                     if(rs_station->busy){
                         if(rs_station->qj==-1 && rs_station->qk==-1){
                             if(rs_station->execution_state==0){
@@ -288,7 +289,7 @@ void runClockCycle_EX(){
                 ex_unit->pipeline_stages_FPmult[j] = NULL;
 
                 for(i=0; i<RESERV_FPMULT_SIZE; i++){
-                    rs_station = rs_mutl[i];
+                    rs_station = rs_fpmutl[i];
                     if(rs_station->busy){
                         if(rs_station->qj==-1 && rs_station->qk==-1){
                             if(rs_station->execution_state==0){
