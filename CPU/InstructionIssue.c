@@ -506,12 +506,12 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			rs_station -> busy = 1;
 			rs_station -> qj = rs_station -> qk = -1;
 			rs_station -> op = opcode;
-			rs_station -> a_immediate = instruction -> immediate;
 			int rename_rs = checkRegStates(0, instruction -> rs);
 			if(rename_rs != -1) {
-				rs_station -> a_register = rename_rs + numberOfIntRegisters; // if a_register >= numberOfIntRegisters, means this register is renamed to an ROB entry
+				rs_station -> a_immediate = instruction -> immediate;
+				rs_station -> a_register = rename_rs;	// ROB entry index
 			} else {
-				rs_station -> a_register = instruction -> rs;
+				rs_station -> vj = instruction -> immediate + cpu -> integerRegister[instruction -> rs];
 			}
 			rs_station -> destination = rob_index;
 			//updateRegisterStates(0, instruction -> reg_target_int, rob_index);
@@ -542,13 +542,14 @@ void updateRS(Instruction *instruction, int rs_index, int rob_index) {
 			rs_station -> busy = 1;
 			rs_station -> qj = rs_station -> qk = -1;
 			rs_station -> qfj = -1;
+			rs_station -> vfj = -1;
 			rs_station -> op = opcode;
-			rs_station -> a_immediate = instruction -> immediate;
 			int rename_rs = checkRegStates(0, instruction -> rs);
 			if(rename_rs != -1) {
-				rs_station -> a_register = rename_rs + numberOfIntRegisters; // if a_register >= numberOfIntRegisters, means this register is renamed to an ROB entry
+				rs_station -> a_immediate = instruction -> immediate;
+				rs_station -> a_register = rename_rs;	// ROB entry index
 			} else {
-				rs_station -> a_register = instruction -> rs;
+				rs_station -> vj = instruction -> immediate + cpu -> integerRegister[instruction -> rs];
 			}
 			rs_station -> destination = rob_index;
 			//updateRegisterStates(1, instruction -> ft, rob_index);

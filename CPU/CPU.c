@@ -65,7 +65,10 @@ int runClockCycle () {
 	Issue();
 	decode();
 	int _continue = runClockCycle_IF();
-	//if (!_continue) return 0;
+	char c;
+	scanf("%c", &c);
+	if (!_continue) return 0;
+
     return 1;
 }
 

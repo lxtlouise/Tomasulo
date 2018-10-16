@@ -399,16 +399,16 @@ void execute_operation(RS_Station *rs_station, int *iresult, float *fresult, int
         *aresult = rs_station->vj + rs_station->vk;
         break;
     case ADD_D:
-        *fresult = rs_station->vfj - rs_station->vfk;
+        *fresult = rs_station->vfj + rs_station->vfk;
         break;
     case SUB_D:
         *fresult = rs_station->vfj - rs_station->vfk;
         break;
     case MUL_D:
-        *fresult = rs_station->vfj - rs_station->vfk;
+        *fresult = rs_station->vfj * rs_station->vfk;
         break;
     case DIV_D:
-        *fresult = rs_station->vfj - rs_station->vfk;
+        *fresult = rs_station->vfj / rs_station->vfk;
         break;
     case BEQZ:
         *iresult = rs_station->vj == 0 ? 1 : 0;
