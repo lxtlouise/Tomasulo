@@ -60,12 +60,13 @@ int runClockCycle () {
 		return 0;
         }
 
-	int _continue = runClockCycle_IF();
-	if (!_continue) return 0;
-	decode();
-	Issue();
+	commit();
     runClockCycle_EX();
-	return 0;
+	Issue();
+	decode();
+	int _continue = runClockCycle_IF();
+	//if (!_continue) return 0;
+    return 1;
 }
 
 /**

@@ -2,7 +2,10 @@
 
 void decode_instruction();
 void initializeDecode() {
-  instructionQueue = createCircularQueue(config -> NI);
+  id_unit = (ID_Unit*) malloc(sizeof(ID_Unit));
+  id_unit->instructionQueue = (CircularQueue*)malloc(sizeof(CircularQueue));
+  id_unit->instructionQueue = createCircularQueue(config -> NI);
+  id_unit->min_fetched_instructions = 0;
 }
 
 void decode_instruction(Instruction *instruction) {
@@ -328,17 +331,18 @@ void decode_instruction(Instruction *instruction) {
     instruction -> reg_target_fp = reg_target_fp;
 }
 
-void enque_instrution_queue(Instruction *instruction) {
-  if (isFullCircularQueue(instructionQueue)) {
+int enque_instrution_queue(Instruction *instruction) {
+  if (isFullCircularQueue(id_unit->instructionQueue)) {
     printf("Instrution queue is full.");
-    return;
+    return 0;
   } else {
-    enqueueCircular(instructionQueue, instruction);
+    enqueueCircular(id_unit->instructionQueue, instruction);
+    return 1;
   }
 }
 
 void decode(){
-	int i;
+	int i, j;
 	for (i = 0; i < if_unit -> n_instructions; i++) {
 		Instruction* instruction = if_unit -> instructions[i];
 		if(instruction==NULL || instruction->is_valid==0)
@@ -347,6 +351,11 @@ void decode(){
 		printf("Decoded %d:%s -> %s, rd=%d, rs=%d, rt=%d, fd=%d, fs=%d, ft=%d, immediate=%d, target=%d\n", instruction -> PC, instruction -> instr,
 			getOpcodeString ((int) instruction -> op), instruction -> rd, instruction -> rs, instruction -> rt, instruction -> fd, instruction -> fs, instruction -> ft,
 			instruction -> immediate, instruction -> target);
-		enque_instrution_queue(instruction);
+		if(!enque_instrution_queue(instruction)){
+            for(j=0; j<if_unit -> n_instructions - i; j++){
+                if_unit -> instructions[j] = if_unit -> instructions[i+j];
+            }
+            id_unit->min_fetched_instructions = i;
+		}
 	}
  }

@@ -64,7 +64,6 @@ Dictionary *instructionCache;
 Dictionary *dataCache;
 Dictionary *codeLabels;
 Dictionary *BTB;
-CircularQueue *instructionQueue;
 CircularQueue *ROB;
 
 

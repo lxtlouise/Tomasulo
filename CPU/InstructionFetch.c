@@ -125,7 +125,7 @@ int predecodeBranchInstruction(Instruction *instruction){
 int runClockCycle_IF() {
     int i;
     if_unit->n_instructions = 0;
-    for(i=0; i<config->NF; i++){
+    for(i=id_unit->min_fetched_instructions; i<config->NF; i++){
         if (if_unit->PC >= (instructionCacheBaseAddress + (cacheLineSize * numberOfInstruction))) { //check whether PC exceeds last instruction in cache
             printf ("All instructions finished...\n");
             return -1;

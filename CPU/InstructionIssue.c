@@ -718,7 +718,7 @@ void Issue() {
 	nr = config -> NR;
 	int queue_size;
 	int rob_size;
-	queue_size = instructionQueue -> size;
+	queue_size = id_unit->instructionQueue -> size;
 	rob_size = ROB -> count;
 	if (queue_size < nw){
 		nw = queue_size;
@@ -729,8 +729,8 @@ void Issue() {
 	}
 	int i;
 	for (i = 0; i < nw; i++) {
-		Instruction *instruction = (Instruction *)dequeueCircular(instructionQueue);
-		if(instruction==NULL)
+		Instruction *instruction = (Instruction *)dequeueCircular(id_unit->instructionQueue);
+		if(instruction==NULL || instruction->is_valid==0)
             break;
 		int rename = checkRenameRegister(instruction);
 		if (rename == -1) {

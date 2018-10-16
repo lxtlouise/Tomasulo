@@ -138,9 +138,9 @@ typedef struct _IFUnit {
 } IF_Unit;
 
 typedef struct _IDUnit {
-	Instruction** instructionQueue;
-	Instruction** instructions;
+	CircularQueue *instructionQueue;
 	int n_instructions;
+	int min_fetched_instructions;
 } ID_Unit;
 
 typedef struct _MEMUnit {
@@ -200,6 +200,7 @@ typedef struct _ROB_entry {
 	ROB_state rob_state;
 	int int_result;
 	float float_result;
+	int addr_result;
 } ROB_entry;
 
 typedef struct _Register_Status {

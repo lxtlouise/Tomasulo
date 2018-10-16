@@ -1,5 +1,44 @@
 # include "../Global/TomasuloSimulator.h"
 
+void propagateResultAgain(ROB_entry *rob_entry){
+    //ROB_entry *rob_entry = (ROB_entry*)(ROB->items[rs_station->destination]);
+    Instruction *instruction = rob_entry->instruction;
+    //int renamed_int = checkRegStates(0, instruction->reg_target_int);
+    //int renamed_float = checkRegStates(1, instruction->reg_target_fp);
+    if(instruction->reg_target_int>=0)
+        register_status->int_reg[instruction->reg_target_int] = -1;
+    if(instruction->reg_target_fp>=0)
+        register_status->fp_reg[instruction->reg_target_fp] = -1;
+
+    int renamed_int = rob_entry->int_renaming_register;
+    int renamed_float = rob_entry->fp_renaming_register;
+
+    int i;
+    for(i=0; i<RESERV_ALL_NUM; i++){
+        RS_Station *rs = ex_unit->allReservationStations[i];
+        if(rs->qj >= 0 && rs->qj == renamed_int){
+            rs->vj = rob_entry->int_result;
+            rs->qj = -1;
+        }
+        if(rs->qk >= 0 && rs->qk == renamed_int){
+            rs->vk = rob_entry->int_result;
+            rs->qk = -1;
+        }
+        if(rs->qfj >= 0 && rs->qfj == renamed_float){
+            rs->vfj = rob_entry->float_result;
+            rs->qfj = -1;
+        }
+        if(rs->qfk >= 0 && rs->qfk == renamed_float){
+            rs->vfk = rob_entry->float_result;
+            rs->qfk = -1;
+        }
+    }
+    if(renamed_int>=0)
+        renaming_status -> int_rreg[renamed_int] = 0;
+    if(renamed_float>=0)
+        renaming_status -> fp_rreg[renamed_float] = 0;
+}
+
 int checkBUS() {
   if (CDB_counter < config -> NB) {
     return (config -> NB - CDB_counter);
@@ -13,32 +52,18 @@ void writeRegister(ROB_entry * rob_entry) {
   int destination;
   int address;
   if (opcode == AND || opcode == ANDI || opcode == OR || opcode == ORI || opcode == SLT || opcode == SLTI || opcode == DADD
-  || opcode == DADDI || opcode == DSUB || opcode == DMUL) {
-    destination = rob_entry -> instruction -> rd;
-    int result = renaming_int_registers[rob_entry -> int_renaming_register] -> data;
-    cpu -> integerRegisters[destination] -> data = result;
-  } else if (opcode == ADD_D || opcode == SUB_D || opcode == MUL_D || opcode == DIV_D) {
-    destination = rob_entry -> instruction -> fd;
-    int result = renaming_int_registers[rob_entry -> fp_renaming_register] -> data;
-    cpu -> floatingPointRegisters[destination] -> data = result;
-  } else if (opcode == LD) {
-    destination = rob_entry -> instruction -> rd;
-    address = rob_entry -> ls_address;
-    DictionaryEntry * dictionary_entry = getValueChainByDictionaryKey(dataCache, &address);
-    int result = *((int *) dictionary_entry -> value -> value);
-    cpu -> integerRegisters[destination] -> data = result;
-  } else if (opcode == L_D) {
-    destination = rob_entry -> instruction -> fd;
-    address = rob_entry -> ls_address;
-    DictionaryEntry * dictionary_entry = getValueChainByDictionaryKey(dataCache, &address);
-    double result = *((double *) dictionary_entry -> value -> value);
-    cpu -> floatingPointRegisters[destination] -> data = result;
+  || opcode == DADDI || opcode == DSUB || opcode == DMUL || opcode == LD) {
+    destination = rob_entry -> instruction -> reg_target_int;
+    cpu -> integerRegisters[destination] -> data = rob_entry->int_result;
+  } else if (opcode == ADD_D || opcode == SUB_D || opcode == MUL_D || opcode == DIV_D || opcode == L_D) {
+    destination = rob_entry -> instruction -> reg_target_fp;
+    cpu -> floatingPointRegisters[destination] -> data = rob_entry->float_result;
   }
 }
 
 void writeMemory(ROB_entry * rob_entry) {
   void * address = malloc(sizeof(int));
-  *((int*)address) = rob_entry -> ls_address;
+  *((int*)address) = rob_entry -> addr_result;
   OpCode opcode = rob_entry -> instruction -> op;
   void * result = malloc(sizeof(double));
   if (opcode == SD) {
@@ -51,6 +76,7 @@ void writeMemory(ROB_entry * rob_entry) {
 }
 
 void commit() {
+  CDB_counter = 0;
   while (1) {
     int bus = checkBUS();
     if (bus != -1) {
@@ -58,21 +84,28 @@ void commit() {
       if (ROB->count == 0) {
         printf("Rob is empty!");
         break;
-      } else if (((ROB_entry*)ROB->items[0])->valid == 1 && ((ROB_entry*)ROB->items[0])->rob_state == WROTE_RESULT) {
-        ROB_entry *entry = (ROB_entry *) dequeueCircular(ROB);
-        if (entry->instruction->op == SD || entry->instruction->op == S_D) {
-          writeMemory(entry);
-          CDB_counter++;
-        } else if (entry->instruction->op == BEQ || entry->instruction->op == BEQZ ||
-                   entry->instruction->op == BNE || entry->instruction->op == BNEZ) {
-          continue;
+      } else {
+        if (((ROB_entry*)ROB->items[ROB->head])->valid == 0) {
+          while (ROB->count>0&& ((ROB_entry*)ROB->items[ROB->head])->valid == 0) {
+            dequeueCircular(ROB);
+          }
         } else {
-          writeRegister(entry);
-          CDB_counter++;
-        }
-      } else if (((ROB_entry*)ROB->items[0])->valid == 0) {
-        while (((ROB_entry*)ROB->items[0])->valid == 0) {
-          dequeueCircular(ROB);
+          if(((ROB_entry*)ROB->items[ROB->head])->rob_state != WROTE_RESULT){
+            break;
+          } else {
+            ROB_entry *entry = (ROB_entry *) dequeueCircular(ROB);
+            if (entry->instruction->op == SD || entry->instruction->op == S_D) {
+              writeMemory(entry);
+              CDB_counter++;
+            } else if (entry->instruction->op == BEQ || entry->instruction->op == BEQZ ||
+                       entry->instruction->op == BNE || entry->instruction->op == BNEZ) {
+              continue;
+            } else {
+              writeRegister(entry);
+              CDB_counter++;
+            }
+            propagateResultAgain(entry);
+          }
         }
       }
     } else {
