@@ -43,8 +43,6 @@ void copyInstruction(Instruction *dest, Instruction *src){
 void initializeFetch() {
     if_unit = (IF_Unit*) malloc(sizeof(IF_Unit));
     if_unit->threadIndex = 0;
-    //BTB = createDictionary(getHashCodeFromCacheAddress_IF, compareBTBValues);
-    //if_unit->PC = instructionCacheBaseAddress;
 }
 
 
@@ -124,6 +122,22 @@ int predecodeBranchInstruction(Instruction *instruction){
     return 0;
 }
 
+int checkIfAvailableInstructions(){
+    int result = 0;
+    Thread *thread;
+    thread = chooseThread(1);
+    if (thread->PC < (instructionCacheBaseAddress + (cacheLineSize * thread->numberOfInstruction))) { //check whether PC exceeds last instruction in cache
+        result++;
+    }
+    thread = chooseThread(0);
+    if(thread!=NULL){
+        if (thread->PC < (instructionCacheBaseAddress + (cacheLineSize * thread->numberOfInstruction))) { //check whether PC exceeds last instruction in cache
+            result++;
+        }
+    }
+    return result;
+}
+
 int runClockCycle_IF() {
     int result = 0;
     int i;
@@ -164,6 +178,8 @@ int runClockCycle_IF() {
         }
         if_unit->n_instructions = i+1;
     }
+    if(result==0)
+        result = checkIfAvailableInstructions();
     return result;
 }
 

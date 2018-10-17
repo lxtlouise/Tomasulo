@@ -108,16 +108,13 @@ typedef struct _cpu {
 
 	int PC; //program counter
 
-	//INTReg **integerRegisters; //integer register
-    //FPReg **floatingPointRegisters; //FP registers
-
 	int memoryAddress;
 
 	int intDestReg;
-        int intResult;
+    int intResult;
 
-        int fpDestReg;
-        double fpResult;
+    int fpDestReg;
+    double fpResult;
 
 } CPU;
 
@@ -142,9 +139,7 @@ typedef struct _IFUnit {
 } IF_Unit;
 
 typedef struct _IDUnit {
-	//CircularQueue *instructionQueue;
-	//int n_instructions;
-	//int min_fetched_instructions;
+
 } ID_Unit;
 
 typedef struct _MEMUnit {
@@ -206,6 +201,7 @@ typedef struct _ROB_entry {
 	int int_result;
 	float float_result;
 	int addr_result;
+	int branch_taken; // for reporting reasons
 } ROB_entry;
 
 typedef struct _Register_Status {

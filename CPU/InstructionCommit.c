@@ -46,6 +46,25 @@ int checkBUS() {
   }
 }
 
+void printCommitedInstruction(ROB_entry *rob_entry){
+  OpCode opcode = rob_entry -> instruction -> op;
+  if (opcode == AND || opcode == ANDI || opcode == OR || opcode == ORI || opcode == SLT || opcode == SLTI || opcode == DADD
+  || opcode == DADDI || opcode == DSUB || opcode == DMUL || opcode == LD) {
+    printf("Thread %i COMMITED     %i: %-40s         | R%i = %i\n", rob_entry->instruction->threadIndex, rob_entry->instruction->PC, rob_entry->instruction->instr, rob_entry->instruction->reg_target_int, rob_entry->int_result);
+  } else if (opcode == ADD_D || opcode == SUB_D || opcode == MUL_D || opcode == DIV_D || opcode == L_D) {
+    printf("Thread %i COMMITED     %i: %-40s         | F%i = %.2f\n", rob_entry->instruction->threadIndex, rob_entry->instruction->PC, rob_entry->instruction->instr, rob_entry->instruction->reg_target_fp, rob_entry->float_result);
+  } else if (opcode == SD){
+    printf("Thread %i COMMITED     %i: %-40s         | Mem(%i) = %i\n", rob_entry->instruction->threadIndex, rob_entry->instruction->PC, rob_entry->instruction->instr, rob_entry->addr_result, rob_entry->int_result);
+  } else if (opcode == S_D){
+    printf("Thread %i COMMITED     %i: %-40s         | Mem(%i) = %.2f\n", rob_entry->instruction->threadIndex, rob_entry->instruction->PC, rob_entry->instruction->instr, rob_entry->addr_result, rob_entry->float_result);
+  } else if (opcode == BEQ || opcode == BEQZ || opcode == BNE || opcode == BNEZ) {
+    if(rob_entry->branch_taken)
+      printf("Thread %i COMMITED     %i: %-40s         | Jumped to %i\n", rob_entry->instruction->threadIndex, rob_entry->instruction->PC, rob_entry->instruction->instr, rob_entry->instruction->target);
+    else
+      printf("Thread %i COMMITED     %i: %-40s         | Not Jumped\n", rob_entry->instruction->threadIndex, rob_entry->instruction->PC, rob_entry->instruction->instr);
+  }
+}
+
 void writeRegister(ROB_entry * rob_entry) {
   OpCode opcode = rob_entry -> instruction -> op;
   Thread *thread = rob_entry->instruction->thread;
@@ -96,7 +115,7 @@ int commitThread(Thread *thread) {
           } else {
             ROB_entry *entry = (ROB_entry *) dequeueCircular(thread->ROB);
             result++;
-            printf("Thread %i COMMITED     %i: %s -> %i - %f\n", entry->instruction->threadIndex, entry->instruction->PC, entry->instruction->instr, entry->int_result, entry->float_result);
+            printCommitedInstruction(entry);
             if (entry->instruction->op == SD || entry->instruction->op == S_D) {
               writeMemory(entry);
               CDB_counter++;

@@ -391,11 +391,12 @@ void executeBranch(RS_Station *rs_station, int branch_taken){
         rob_entry = rs_station->thread->ROB->items[rs_station->destination];
         rs_station->thread->PC = branch_taken ? rob_entry->instruction->target : instruction->PC+4;
     }
+    rob_entry->branch_taken = branch_taken;
 }
 
 void execute_operation(RS_Station *rs_station, int *iresult, float *fresult, int *aresult){
     ROB_entry* rob_entry = rs_station->thread->ROB->items[rs_station->destination];
-    printf ("Thread %i EXECUTED      %i: %s\n", rob_entry->instruction->threadIndex, rob_entry->instruction->PC, rob_entry->instruction->instr);
+    printf ("Thread %i EXECUTED    %i: %s\n", rob_entry->instruction->threadIndex, rob_entry->instruction->PC, rob_entry->instruction->instr);
     DictionaryEntry *dataCacheElement;
     *iresult = 0;
     *fresult = 0.0f;

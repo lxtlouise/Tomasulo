@@ -221,7 +221,6 @@ int checkRenameRegister(Instruction *instruction) {
 		|| opcode == DSUB || opcode == DMUL || opcode == LD ) {
 		for(i = 0; i < RENAMING_INT_REGISTER_NUM; i++) {
 			if(instruction->thread->renaming_status -> int_rreg[i] == 0) {
-				//instruction->thread->renaming_status -> int_rreg[i] = 1;
 				return i;
 			}
 		}
@@ -229,7 +228,6 @@ int checkRenameRegister(Instruction *instruction) {
 		|| opcode == MUL_D || opcode == DIV_D){
 		for(i = 0; i < RENAMING_FP_REGISTER_NUM; i++) {
 			if(instruction->thread->renaming_status -> fp_rreg[i] == 0) {
-				//instruction->thread->renaming_status -> fp_rreg[i] = 1;
 				return i + RENAMING_INT_REGISTER_NUM;
 			}
 		}
@@ -746,17 +744,17 @@ int issueThread(Thread *thread){
         result++;
 		int rename = checkRenameRegister(instruction);
 		if (rename == -1) {
-			printf("instruction stall1\n");
+			printf("STALL - no available rename registers\n");
 			break;
 		}
 		int rob_index = checkROB(thread);
 		if (rob_index == -1) {
-			printf("rob full\n");
+			printf("STALL - ROB is full\n");
 			break;
 		}
 		int rs_index = checkRSAvailability(instruction);
 		if(rs_index == -1) {
-			printf("instruction stall2\n");
+			printf("STALL - no available reservation stations\n");
 			break;
 		}
         dequeueCircular(thread->instructionQueue);
@@ -797,7 +795,6 @@ int Issue() {
     thread = chooseThread(0);
     if(thread!=NULL)
         result += issueThread(thread);
-	//printRSStation();
     return result;
 }
 
