@@ -231,6 +231,7 @@ typedef struct _Thread {
     INTReg **renaming_int_registers;
     FPReg **renaming_fp_registers;
     Renaming_Status *renaming_status;
+	int num_stalls;
 } Thread;
 
 

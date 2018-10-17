@@ -745,16 +745,19 @@ int issueThread(Thread *thread){
 		int rename = checkRenameRegister(instruction);
 		if (rename == -1) {
 			printf("STALL - no available rename registers\n");
+			thread->num_stalls++;
 			break;
 		}
 		int rob_index = checkROB(thread);
 		if (rob_index == -1) {
 			printf("STALL - ROB is full\n");
+			thread->num_stalls++;
 			break;
 		}
 		int rs_index = checkRSAvailability(instruction);
 		if(rs_index == -1) {
 			printf("STALL - no available reservation stations\n");
+			thread->num_stalls++;
 			break;
 		}
         dequeueCircular(thread->instructionQueue);

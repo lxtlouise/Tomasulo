@@ -13,6 +13,7 @@ int compareBTBValues (void *btbvalue1, void *btbvalue2);
 
 void InitializeThread(int index, Thread* thread, char *fileName){
     int i;
+	thread->num_stalls = 0;
     thread->index = index;
     if(fileName==NULL){
         thread->is_available = 0;
@@ -142,6 +143,9 @@ void printState(){
         printRegisterState(&(threads[1]));
         printDataCache(&(threads[1]));
 	}
+	printf("------------------------ STALLS ---------------------------\n\n");
+	printf("Number of stalls in THREAD 0: %d\n", threads[0].num_stalls);
+	printf("Number of stalls in THREAD 1: %d\n", threads[1].num_stalls);
 }
 
 /**
