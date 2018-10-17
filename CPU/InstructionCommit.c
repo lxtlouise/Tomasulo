@@ -1,17 +1,14 @@
 # include "../Global/TomasuloSimulator.h"
 
 void propagateResultAgain(ROB_entry *rob_entry){
-    //ROB_entry *rob_entry = (ROB_entry*)(ROB->items[rs_station->destination]);
     Instruction *instruction = rob_entry->instruction;
-    //int renamed_int = checkRegStates(0, instruction->reg_target_int);
-    //int renamed_float = checkRegStates(1, instruction->reg_target_fp);
-    if(instruction->reg_target_int>=0)
-        instruction->thread->register_status->int_reg[instruction->reg_target_int] = -1;
-    if(instruction->reg_target_fp>=0)
-        instruction->thread->register_status->fp_reg[instruction->reg_target_fp] = -1;
 
     int renamed_int = rob_entry->int_renaming_register;
     int renamed_float = rob_entry->fp_renaming_register;
+    if(instruction->reg_target_int>=0 && instruction->thread->register_status->int_reg[instruction->reg_target_int]==renamed_int)
+        instruction->thread->register_status->int_reg[instruction->reg_target_int] = -1;
+    if(instruction->reg_target_fp>=0 && instruction->thread->register_status->fp_reg[instruction->reg_target_fp]==renamed_float)
+        instruction->thread->register_status->fp_reg[instruction->reg_target_fp] = -1;
 
     int i;
     for(i=0; i<RESERV_ALL_NUM; i++){
@@ -86,9 +83,7 @@ int commitThread(Thread *thread) {
   while (1) {
     int bus = checkBUS();
     if (bus != -1) {
-	//printf("size2: %d\n", thread->ROB -> count);
       if (thread->ROB->count == 0) {
-        //printf("Rob is empty!");
         break;
       } else {
         if (((ROB_entry*)thread->ROB->items[thread->ROB->head])->valid == 0) {

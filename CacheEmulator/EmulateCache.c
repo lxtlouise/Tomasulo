@@ -19,7 +19,7 @@ size_t getlinenew(char **linep, size_t *n, FILE *fp);
  * This function emulates loader. Fills instruction and data cache upon reading .DAT file.
  * @param fileName: .DAT file provided as input to simulator
  */
-void fillInstructionAndDataCache (char *fileName, Dictionary **instructionCache, Dictionary **dataCache, Dictionary **codeLabels) {
+int fillInstructionAndDataCache (char *fileName, Dictionary **instructionCache, Dictionary **dataCache, Dictionary **codeLabels) {
 	char *line = (char *) malloc (sizeof(char) * MAX_LINE);
 	char *tempLine = (char *) malloc (sizeof(char) * MAX_LINE);
 	char label [MAX_LINE];
@@ -36,7 +36,7 @@ void fillInstructionAndDataCache (char *fileName, Dictionary **instructionCache,
 	FILE *fp;
 
 	if ((fp = fopen(fileName, "r")) == NULL) {
-		perror ("Error to open the configuration file...");
+		perror ("Error opening Program");
 		exit (EXIT_FAILURE);
 	}
 
@@ -45,7 +45,7 @@ void fillInstructionAndDataCache (char *fileName, Dictionary **instructionCache,
 	*dataCache = createDictionary (getHashCodeFromCacheAddress, compareMemoryValues);
 	*codeLabels = createDictionary (getHashCodeFromCodeLabel, compareCodeLabelAddress);
 
-	numberOfInstruction = 0;
+	int numberOfInstruction = 0;
 
 	while ((read = getlinenew(&line, &len, fp)) != -1) { //loop to read file line by line and tokenize
 		strcpy (tempLine, line);
@@ -108,6 +108,7 @@ void fillInstructionAndDataCache (char *fileName, Dictionary **instructionCache,
 
 	if (fp)
 		fclose(fp);
+    return numberOfInstruction;
 }
 
 /**

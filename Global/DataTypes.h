@@ -220,6 +220,8 @@ typedef struct _Renaming_Status {
 
 typedef struct _Thread {
     int is_available;
+    int index;
+    int numberOfInstruction;
     Dictionary *instructionCache;
     Dictionary *dataCache;
     Dictionary *codeLabels;

@@ -57,7 +57,7 @@ int instructionCacheBaseAddress; //ICBA
 
 int cacheLineSize; //CLS
 
-int numberOfInstruction;
+//int numberOfInstruction;
 
 int CDB_counter;
 
@@ -89,9 +89,9 @@ RS_Station **rs_bu;
 //INTReg **renaming_int_registers;
 //FPReg **renaming_fp_registers;
 //Renaming_Status *renaming_status;
-void InitializeThread(Thread* thread, char *fileName);
+void InitializeThread(int index, Thread* thread, char *fileName);
 
-void fillInstructionAndDataCache (char *fileName, Dictionary **instructionCache, Dictionary **dataCache, Dictionary **codeLabels);
+int fillInstructionAndDataCache (char *fileName, Dictionary **instructionCache, Dictionary **dataCache, Dictionary **codeLabels);
 
 void setBTBEntry(Instruction* instruction, int branch_taken, int branch_target);
 

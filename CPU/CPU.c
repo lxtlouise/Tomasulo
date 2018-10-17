@@ -11,14 +11,15 @@ int getHashCodeFromPCHash (void *PCHash);
 int getHashCodeFromCacheAddress_IF (void *address);
 int compareBTBValues (void *btbvalue1, void *btbvalue2);
 
-void InitializeThread(Thread* thread, char *fileName){
+void InitializeThread(int index, Thread* thread, char *fileName){
     int i;
+    thread->index = index;
     if(fileName==NULL){
         thread->is_available = 0;
         return;
     }
     thread->is_available = 1;
-    fillInstructionAndDataCache (fileName, &(thread->instructionCache), &(thread->dataCache), &(thread->codeLabels));
+    thread->numberOfInstruction = fillInstructionAndDataCache (fileName, &(thread->instructionCache), &(thread->dataCache), &(thread->codeLabels));
     thread->ROB = createCircularQueue(config -> NR);
     thread->BTB = createDictionary(getHashCodeFromCacheAddress_IF, compareBTBValues);
     thread->PC = instructionCacheBaseAddress;

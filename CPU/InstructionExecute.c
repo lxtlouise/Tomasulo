@@ -37,8 +37,6 @@ void initializeExecute() {
 void propagateResult(RS_Station *rs_station, int int_result, float float_result, int addr_result){
     ROB_entry *rob_entry = (ROB_entry*)(rs_station->thread->ROB->items[rs_station->destination]);
     Instruction *instruction = rob_entry->instruction;
-    //int renamed_int = checkRegStates(0, instruction->reg_target_int);
-    //int renamed_float = checkRegStates(1, instruction->reg_target_fp);
     int renamed_int = rob_entry->int_renaming_register;
     int renamed_float = rob_entry->fp_renaming_register;
 
@@ -64,10 +62,6 @@ void propagateResult(RS_Station *rs_station, int int_result, float float_result,
             rs->qfk = -1;
         }
     }
-    //if(renamed_int>=0)
-    //    renaming_status -> int_rreg[renamed_int] = 0;
-    //if(renamed_float>=0)
-    //    renaming_status -> fp_rreg[renamed_float] = 0;
     rs_station->busy = 0;
     rob_entry->int_result = int_result;
     rob_entry->float_result = float_result;
@@ -397,7 +391,6 @@ void executeBranch(RS_Station *rs_station, int branch_taken){
         rob_entry = rs_station->thread->ROB->items[rs_station->destination];
         rs_station->thread->PC = branch_taken ? rob_entry->instruction->target : instruction->PC+4;
     }
-	//id_unit->min_fetched_instructions = 0;
 }
 
 void execute_operation(RS_Station *rs_station, int *iresult, float *fresult, int *aresult){

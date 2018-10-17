@@ -221,6 +221,32 @@ int checkRenameRegister(Instruction *instruction) {
 		|| opcode == DSUB || opcode == DMUL || opcode == LD ) {
 		for(i = 0; i < RENAMING_INT_REGISTER_NUM; i++) {
 			if(instruction->thread->renaming_status -> int_rreg[i] == 0) {
+				//instruction->thread->renaming_status -> int_rreg[i] = 1;
+				return i;
+			}
+		}
+	} else if (opcode == L_D || opcode == ADD_D || opcode == SUB_D
+		|| opcode == MUL_D || opcode == DIV_D){
+		for(i = 0; i < RENAMING_FP_REGISTER_NUM; i++) {
+			if(instruction->thread->renaming_status -> fp_rreg[i] == 0) {
+				//instruction->thread->renaming_status -> fp_rreg[i] = 1;
+				return i + RENAMING_INT_REGISTER_NUM;
+			}
+		}
+	} else {
+		return -2;
+	}
+	return -1;
+}
+
+int setRenameRegister(Instruction *instruction) {
+	OpCode opcode = instruction -> op;
+	int i;
+	if (opcode == AND || opcode == ANDI || opcode == OR || opcode == ORI
+		|| opcode == SLT || opcode == SLTI || opcode == DADD || opcode == DADDI
+		|| opcode == DSUB || opcode == DMUL || opcode == LD ) {
+		for(i = 0; i < RENAMING_INT_REGISTER_NUM; i++) {
+			if(instruction->thread->renaming_status -> int_rreg[i] == 0) {
 				instruction->thread->renaming_status -> int_rreg[i] = 1;
 				return i;
 			}
@@ -734,6 +760,7 @@ int issueThread(Thread *thread){
 			break;
 		}
         dequeueCircular(thread->instructionQueue);
+        setRenameRegister(instruction);
         printf ("Thread %i ISSUED       %i: %s\n", instruction->threadIndex, instruction->PC, instruction->instr);
 		ROB_entry *rob_entry = (ROB_entry *) malloc(sizeof(ROB_entry));
 		rob_entry -> valid = 1;

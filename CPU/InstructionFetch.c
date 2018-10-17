@@ -127,24 +127,25 @@ int predecodeBranchInstruction(Instruction *instruction){
 int runClockCycle_IF() {
     int result = 0;
     int i;
-    if_unit->threadIndex = 0;
-    if(threads[1].is_available && threads[1].instructionQueue->count < threads[0].instructionQueue->count)
-        if_unit->threadIndex = 1;
-    Thread *thread = &(threads[if_unit->threadIndex]);
+    Thread *thread = &(threads[0]);
+    if(threads[1].is_available){
+        if(threads[1].instructionQueue->count == threads[0].instructionQueue->count){
+            thread = chooseThread(1);
+        } else if(threads[1].instructionQueue->count < threads[0].instructionQueue->count)
+            thread = &(threads[1]);
+    }
+    if_unit->threadIndex = thread->index;
     int instrs = config->NF;
     if(thread->instructionQueue->size - thread->instructionQueue->count < config->NF)
         instrs = thread->instructionQueue->size - thread->instructionQueue->count;
     if_unit->n_instructions = 0;
     for(i=0; i<instrs; i++){
-        if (thread->PC >= (instructionCacheBaseAddress + (cacheLineSize * numberOfInstruction))) { //check whether PC exceeds last instruction in cache
-            printf ("All instructions finished...\n");
+        if (thread->PC >= (instructionCacheBaseAddress + (cacheLineSize * thread->numberOfInstruction))) { //check whether PC exceeds last instruction in cache
             break;
         }
-        result++;
 
         DictionaryEntry *currentInstruction = getValueChainByDictionaryKey (thread->instructionCache, &(thread->PC));
-        if(currentInstruction==NULL)
-            break;
+        result++;
         if_unit->instructions[i] = (Instruction*)malloc(sizeof(Instruction));
         if_unit->instructions[i]->threadIndex = if_unit->threadIndex;
         if_unit->instructions[i]->thread = thread;
