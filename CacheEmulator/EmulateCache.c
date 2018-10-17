@@ -19,7 +19,7 @@ size_t getlinenew(char **linep, size_t *n, FILE *fp);
  * This function emulates loader. Fills instruction and data cache upon reading .DAT file.
  * @param fileName: .DAT file provided as input to simulator
  */
-void fillInstructionAndDataCache (char *fileName) {
+void fillInstructionAndDataCache (char *fileName, Dictionary **instructionCache, Dictionary **dataCache, Dictionary **codeLabels) {
 	char *line = (char *) malloc (sizeof(char) * MAX_LINE);
 	char *tempLine = (char *) malloc (sizeof(char) * MAX_LINE);
 	char label [MAX_LINE];
@@ -41,9 +41,9 @@ void fillInstructionAndDataCache (char *fileName) {
 	}
 
 	//Instantiate caches as dictionary data structure keyed by HEX address
-	instructionCache = createDictionary (getHashCodeFromCacheAddress, compareInstructions);
-	dataCache = createDictionary (getHashCodeFromCacheAddress, compareMemoryValues);
-	codeLabels = createDictionary (getHashCodeFromCodeLabel, compareCodeLabelAddress);
+	*instructionCache = createDictionary (getHashCodeFromCacheAddress, compareInstructions);
+	*dataCache = createDictionary (getHashCodeFromCacheAddress, compareMemoryValues);
+	*codeLabels = createDictionary (getHashCodeFromCodeLabel, compareCodeLabelAddress);
 
 	numberOfInstruction = 0;
 
@@ -76,14 +76,14 @@ void fillInstructionAndDataCache (char *fileName) {
 					continue;
 
 				//printf("InstructionAddress:%d->Label:%s\n", currentAddress, label);
-				addDictionaryEntry (codeLabels, (void *) label, addrPtr);
+				addDictionaryEntry (*codeLabels, (void *) label, addrPtr);
 			}
 
 			if ((line = strtok(line, LINE_TERMINATOR)) == NULL || *line == 0)
 				continue;
 
 			//printf("InstructionAddress:%d->Instruction:%s\n", currentAddress, line);
-			addDictionaryEntry (instructionCache, addrPtr, line);
+			addDictionaryEntry (*instructionCache, addrPtr, line);
 		} else { //parse lines after DATA tag as memory values
 			line = strtok(line, MEMORY_SEPARATOR);
 
@@ -98,7 +98,7 @@ void fillInstructionAndDataCache (char *fileName) {
 				*((double*)valuePtr) = atof (memoryValue);
 
 				//printf("Mem(%d) = %0.2lf\n", atoi (memoryAddress), atof (memoryValue));
-				addDictionaryEntry (dataCache, addrPtr, valuePtr);
+				addDictionaryEntry (*dataCache, addrPtr, valuePtr);
 			}
 		}
 

@@ -65,6 +65,18 @@ static inline void *dequeueCircular (CircularQueue *circularQueue) {
 	return value;
 }
 
+static inline void *peekCircular (CircularQueue *circularQueue) {
+	void *value = NULL;
+
+	if (getCountCircularQueue (circularQueue) != 0) {
+		value = circularQueue -> items [circularQueue -> head];
+		//circularQueue -> head = (circularQueue -> head + 1) % circularQueue -> size;
+		//circularQueue -> count--;
+	}
+
+	return value;
+}
+
 static inline void *getHeadCircularQueue (CircularQueue *circularQueue) {
 	void *value = NULL;
 

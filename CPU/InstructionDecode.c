@@ -3,9 +3,9 @@
 void decode_instruction();
 void initializeDecode() {
   id_unit = (ID_Unit*) malloc(sizeof(ID_Unit));
-  id_unit->instructionQueue = (CircularQueue*)malloc(sizeof(CircularQueue));
-  id_unit->instructionQueue = createCircularQueue(config -> NI);
-  id_unit->min_fetched_instructions = 0;
+  //id_unit->instructionQueue = (CircularQueue*)malloc(sizeof(CircularQueue));
+  //id_unit->instructionQueue = createCircularQueue(config -> NI);
+  //id_unit->min_fetched_instructions = 0;
 }
 
 void decode_instruction(Instruction *instruction) {
@@ -297,7 +297,7 @@ void decode_instruction(Instruction *instruction) {
 	}
 
 	if (op == BEQZ || op == BNEZ || op == BEQ || op == BNE) {
-		DictionaryEntry *codeLabel = getValueChainByDictionaryKey (codeLabels, (void *) token);
+		DictionaryEntry *codeLabel = getValueChainByDictionaryKey (instruction->thread->codeLabels, (void *) token);
 
 		if (codeLabel == NULL) {
 			printf("Invalid code label cannot be resolved...\n");
@@ -332,30 +332,34 @@ void decode_instruction(Instruction *instruction) {
 }
 
 int enque_instrution_queue(Instruction *instruction) {
-  if (isFullCircularQueue(id_unit->instructionQueue)) {
-    printf("Instrution queue is full.");
+  if (isFullCircularQueue(instruction->thread->instructionQueue)) {
+    printf("Instrution queue is full.\n");
     return 0;
   } else {
-    enqueueCircular(id_unit->instructionQueue, instruction);
+    enqueueCircular(instruction->thread->instructionQueue, instruction);
     return 1;
   }
 }
 
-void decode(){
+int decode(){
 	int i, j;
+	int result = 0;
+	Thread *thread = &(threads[if_unit->threadIndex]);
 	for (i = 0; i < if_unit -> n_instructions; i++) {
 		Instruction* instruction = if_unit -> instructions[i];
 		if(instruction==NULL || instruction->is_valid==0)
             break;
+        result++;
 		decode_instruction(instruction);
-		printf("Decoded %d:%s -> %s, rd=%d, rs=%d, rt=%d, fd=%d, fs=%d, ft=%d, immediate=%d, target=%d\n", instruction -> PC, instruction -> instr,
-			getOpcodeString ((int) instruction -> op), instruction -> rd, instruction -> rs, instruction -> rt, instruction -> fd, instruction -> fs, instruction -> ft,
-			instruction -> immediate, instruction -> target);
+		printf ("Thread %i DECODED      %i: %s\n", instruction->threadIndex, instruction->PC, instruction->instr);
+		//printf("Decoded %d:%s -> %s, rd=%d, rs=%d, rt=%d, fd=%d, fs=%d, ft=%d, immediate=%d, target=%d\n", instruction -> PC, instruction -> instr,
+		//	getOpcodeString ((int) instruction -> op), instruction -> rd, instruction -> rs, instruction -> rt, instruction -> fd, instruction -> fs, instruction -> ft,
+		//	instruction -> immediate, instruction -> target);
 		if(!enque_instrution_queue(instruction)){
             for(j=0; j<if_unit -> n_instructions - i; j++){
                 if_unit -> instructions[j] = if_unit -> instructions[i+j];
             }
-            id_unit->min_fetched_instructions = i;
 		}
 	}
+	return result;
  }

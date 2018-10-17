@@ -20,21 +20,23 @@ int CDB_counter = 0;
 int main(int argc, char** argv) {
 
 	//Validate command line argument
-	if (argc != 3) {
+	/*if (argc != 3) {
 		printf ("USAGE: TomasuloSimulator <benchmark_file> <config_file>\n");
+		exit (EXIT_FAILURE);
+	}*/
+	if (argc <2) {
+		printf ("USAGE: TomasuloSimulator <benchmark_file1> [<benchmark_file2>]\n");
 		exit (EXIT_FAILURE);
 	}
 
 	config = (Config*)malloc(sizeof(Config));
-	read_configfile(argv[2]);
+	read_configfile(ENV_CONFIG_FILE);
 
-	fillInstructionAndDataCache (argv[1]); //call loader to fill caches
+    printf("----------------------- THREAD 0 -------------------------\n\n");
+	InitializeThread(&(threads[0]), argv[1]);
 
-	printInstructionCache (); //print instruction cache
-
-	printDataCache ();
-
-	printCodeLabels (); //print data cache
+    printf("----------------------- THREAD 1 -------------------------\n\n");
+	InitializeThread(&(threads[1]), argc>=3?argv[2]:NULL);
 
 	initializeCPU (); //initialize CPU data structure
 
@@ -46,9 +48,9 @@ int main(int argc, char** argv) {
 
 	initializeExecute();
 
-	while (runClockCycle()); //loop emulating simulator clock cycles
+	while (runClockCycle()>0); //loop emulating simulator clock cycles
 
-	//printDataCache (); //print data cache
+    printState(); // print CPU state
 
 
 	//printIntegerRegisters (); //print integer registers

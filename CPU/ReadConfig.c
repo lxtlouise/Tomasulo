@@ -31,7 +31,7 @@ void read_configfile(char *fileName) {
             tempLine = strtok(NULL,",");
             strcpy(temp, tempLine);
             config -> NF = atoi(temp);
-            printf("%d\n", config -> NF);
+            printf("NF = %d\n", config -> NF);
         }
 
         if ((line_ptr = strchr(line, 'I')) != NULL && *line_ptr != 0) {
@@ -39,7 +39,7 @@ void read_configfile(char *fileName) {
             tempLine = strtok(NULL,",");
             strcpy(temp, tempLine);
             config -> NI = atoi(temp);
-            printf("%d\n", config -> NI);
+            printf("NI = %d\n", config -> NI);
 
         }
 
@@ -48,7 +48,7 @@ void read_configfile(char *fileName) {
             tempLine = strtok(NULL,",");
             strcpy(temp, tempLine);
             config -> NW = atoi(temp);
-            printf("%d\n", config -> NW);
+            printf("NW = %d\n", config -> NW);
         }
 
         if ((line_ptr = strchr(line, 'R')) != NULL && *line_ptr != 0) {
@@ -56,7 +56,7 @@ void read_configfile(char *fileName) {
             tempLine = strtok(NULL,",");
             strcpy(temp, tempLine);
             config -> NR = atoi(temp);
-            printf("%d\n", config -> NR);
+            printf("NR = %d\n", config -> NR);
 
         }
 
@@ -65,7 +65,7 @@ void read_configfile(char *fileName) {
             tempLine = strtok(NULL,",");
             strcpy(temp, tempLine);
             config -> NB = atoi(temp);
-            printf("%d\n", config -> NB);
+            printf("NB = %d\n", config -> NB);
 
         }
 

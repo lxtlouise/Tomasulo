@@ -16,6 +16,7 @@
 #include "./DataTypes.h"
 #include "./ADT/CircularQueue.h"
 #include "./ADT/Dictionary.h"
+#define ENV_CONFIG_FILE "../Config/TomasuloSimulator.conf"
 
 //macros for parsing and tokenizing
 #define DATA_LABEL "DATA"
@@ -60,12 +61,13 @@ int numberOfInstruction;
 
 int CDB_counter;
 
-Dictionary *instructionCache;
-Dictionary *dataCache;
-Dictionary *codeLabels;
-Dictionary *BTB;
-CircularQueue *ROB;
+//Dictionary *instructionCache;
+//Dictionary *dataCache;
+//Dictionary *codeLabels;
+//Dictionary *BTB;
+//CircularQueue *ROB;
 
+Thread threads[2];
 
 CPU *cpu;
 Config *config;
@@ -83,13 +85,13 @@ RS_Station **rs_fpmutl;
 RS_Station **rs_fpdiv;
 RS_Station **rs_bu;
 
-Register_Status *register_status;
-INTReg **renaming_int_registers;
-FPReg **renaming_fp_registers;
-Renaming_Status *renaming_status;
+//Register_Status *register_status;
+//INTReg **renaming_int_registers;
+//FPReg **renaming_fp_registers;
+//Renaming_Status *renaming_status;
+void InitializeThread(Thread* thread, char *fileName);
 
-
-void fillInstructionAndDataCache (char *fileName);
+void fillInstructionAndDataCache (char *fileName, Dictionary **instructionCache, Dictionary **dataCache, Dictionary **codeLabels);
 
 void setBTBEntry(Instruction* instruction, int branch_taken, int branch_target);
 
@@ -103,21 +105,22 @@ int runClockCycle ();
 int runClockCycle_IF();
 void initializeInstruction(Instruction *instruction);
 void copyInstruction(Instruction *dest, Instruction *src);
-void decode();
-void Issue();
-void runClockCycle_EX();
-void commit();
+int decode();
+int Issue();
+int runClockCycle_EX();
+int commit();
 
-
-void printInstructionCache ();
-void printCodeLabels ();
-void printDataCache ();
-void printIntegerRegisters ();
-void printFPRegisters ();
-void printRSStation();
-void printROB();
-void printRegisterState();
+void printState();
+void printInstructionCache (Thread *thread);
+//void printCodeLabels ();
+//void printDataCache ();
+//void printIntegerRegisters ();
+//void printFPRegisters ();
+//void printRSStation();
+//void printROB();
+//void printRegisterState();
 
 void read_configfile(char * fileName);
+Thread *chooseThread(int is_primary);
 
 #endif /* GLOBAL_TOMASULOSIMULATOR_H_ */

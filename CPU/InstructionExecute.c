@@ -35,7 +35,7 @@ void initializeExecute() {
 
 
 void propagateResult(RS_Station *rs_station, int int_result, float float_result, int addr_result){
-    ROB_entry *rob_entry = (ROB_entry*)(ROB->items[rs_station->destination]);
+    ROB_entry *rob_entry = (ROB_entry*)(rs_station->thread->ROB->items[rs_station->destination]);
     Instruction *instruction = rob_entry->instruction;
     //int renamed_int = checkRegStates(0, instruction->reg_target_int);
     //int renamed_float = checkRegStates(1, instruction->reg_target_fp);
@@ -45,6 +45,8 @@ void propagateResult(RS_Station *rs_station, int int_result, float float_result,
     int i;
     for(i=0; i<RESERV_ALL_NUM; i++){
         RS_Station *rs = ex_unit->allReservationStations[i];
+        if(rs->thread!=rs_station->thread)
+            continue;
         if(rs->qj >= 0 && rs->qj == renamed_int){
             rs->vj = int_result;
             rs->qj = -1;
@@ -75,9 +77,10 @@ void propagateResult(RS_Station *rs_station, int int_result, float float_result,
 
 void execute_operation(RS_Station *rs_station, int *iresult, float *fresult, int *aresult);
 
-void executeBranch(RS_Station *rs_station);
+void executeBranch(RS_Station *rs_station, int branch_taken);
 
-void runClockCycle_EX(){
+int runClockCycle_EX(){
+    int result = 0;
     int cdb_usage = 0;
     int cdb_sz = config->NB - CDB_counter;
     int i, j;
@@ -91,10 +94,15 @@ void runClockCycle_EX(){
     for(i=0; i<RESERV_BU_SIZE; i++){
         rs_station = rs_bu[i];
         if(rs_station->busy){
+            result++;
             if(rs_station->qj==-1 && rs_station->qk==-1){
                 if(rs_station->execution_state==0){
-                    ROB_entry* robEntry = ROB->items[rs_station->destination];
-                    executeBranch(rs_station);
+                    ROB_entry* rob_entry = rs_station->thread->ROB->items[rs_station->destination];
+                    int branch_taken, ba; float bf;
+                    execute_operation(rs_station, &branch_taken, &bf, &ba);
+                    executeBranch(rs_station, branch_taken);
+                    rob_entry->rob_state = WROTE_RESULT;
+                    rs_station->busy = 0;
                     rs_station->execution_state++;
                 } else
                     rs_station->execution_state++;
@@ -106,6 +114,7 @@ void runClockCycle_EX(){
         if(cdb_usage < cdb_sz){
             rs_station = rs_int[i];
             if(rs_station->busy){
+                result++;
                 if(rs_station->qj==-1 && rs_station->qk==-1){
                     if(rs_station->execution_state==0){
                         cdbr[cdb_usage] = rs_station;
@@ -123,6 +132,7 @@ void runClockCycle_EX(){
         if(cdb_usage < cdb_sz){
             rs_station = rs_load[i];
             if(rs_station->busy){
+                result++;
                 if(rs_station->qj==-1 && rs_station->qk==-1){
                     if(rs_station->execution_state==0){
                         cdbr[cdb_usage] = rs_station;
@@ -140,7 +150,8 @@ void runClockCycle_EX(){
         if(cdb_usage < cdb_sz){
             rs_station = rs_save[i];
             if(rs_station->busy){
-                if(rs_station->qj==-1 && rs_station->qk==-1){
+                result++;
+                if(rs_station->qj==-1 && rs_station->qk==-1 && rs_station->qfk==-1){
                     if(rs_station->execution_state==0){
                         cdbr[cdb_usage] = rs_station;
                         execute_operation(rs_station, &(cdbi[cdb_usage]), &(cdbf[cdb_usage]), &(cdba[cdb_usage]));
@@ -155,6 +166,8 @@ void runClockCycle_EX(){
 
     for(j=PIPELINE_STAGES_MULT-1; j>=0; j--){
         rs_station = ex_unit->pipeline_stages_MULT[j];
+        if(rs_station!=NULL && rs_station->busy!=0)
+            result++;
         if(j==PIPELINE_STAGES_MULT-1){
             if(rs_station!=NULL){
                 if(cdb_usage < cdb_sz && rs_station->busy!=0){
@@ -205,7 +218,9 @@ void runClockCycle_EX(){
 
     for(j=PIPELINE_STAGES_FPadd-1; j>=0; j--){
         rs_station = ex_unit->pipeline_stages_FPadd[j];
-        if(j==PIPELINE_STAGES_MULT-1){
+        if(rs_station!=NULL && rs_station->busy!=0)
+            result++;
+        if(j==PIPELINE_STAGES_FPadd-1){
             if(rs_station!=NULL){
                 if(cdb_usage < cdb_sz && rs_station->busy!=0){
                     cdbr[cdb_usage] = rs_station;
@@ -241,7 +256,7 @@ void runClockCycle_EX(){
                     rs_station = rs_fpadd[i];
 
                     if(rs_station->busy){
-                        if(rs_station->qj==-1 && rs_station->qk==-1){
+                        if(rs_station->qfj==-1 && rs_station->qfk==-1){
                             if(rs_station->execution_state==0){
                                 rs_station->execution_state++;
                                 ex_unit->pipeline_stages_FPadd[0] = rs_station;
@@ -256,7 +271,9 @@ void runClockCycle_EX(){
 
     for(j=PIPELINE_STAGES_FPmult-1; j>=0; j--){
         rs_station = ex_unit->pipeline_stages_FPmult[j];
-        if(j==PIPELINE_STAGES_MULT-1){
+        if(rs_station!=NULL && rs_station->busy!=0)
+            result++;
+        if(j==PIPELINE_STAGES_FPmult-1){
             if(rs_station!=NULL){
                 if(cdb_usage < cdb_sz && rs_station->busy!=0){
                     cdbr[cdb_usage] = rs_station;
@@ -291,7 +308,7 @@ void runClockCycle_EX(){
                 for(i=0; i<RESERV_FPMULT_SIZE; i++){
                     rs_station = rs_fpmutl[i];
                     if(rs_station->busy){
-                        if(rs_station->qj==-1 && rs_station->qk==-1){
+                        if(rs_station->qfj==-1 && rs_station->qfk==-1){
                             if(rs_station->execution_state==0){
                                 rs_station->execution_state++;
                                 ex_unit->pipeline_stages_FPmult[0] = rs_station;
@@ -304,9 +321,28 @@ void runClockCycle_EX(){
         }
     }
 
+    for(i=0; i<RESERV_FPDIV_SIZE; i++){
+        if(cdb_usage < cdb_sz){
+            rs_station = rs_fpdiv[i];
+            if(rs_station->busy){
+                result++;
+                if(rs_station->qfj==-1 && rs_station->qfk==-1){
+                    if(rs_station->execution_state==7){
+                        cdbr[cdb_usage] = rs_station;
+                        execute_operation(rs_station, &(cdbi[cdb_usage]), &(cdbf[cdb_usage]), &(cdba[cdb_usage]));
+                        rs_station->execution_state++;
+                        cdb_usage++;
+                    } else
+                        rs_station->execution_state++;
+                }
+            }
+        }
+    }
+
     for(i=0; i<cdb_usage; i++){
         propagateResult(cdbr[i], cdbi[i], cdbf[i], cdba[i]);
     }
+    return result;
 }
 void propagateResultAgain(ROB_entry *rob_entry);
 
@@ -317,7 +353,7 @@ void invalidateROBEntry(ROB_entry *rob_entry){
     int i;
     for(i=0; i<RESERV_ALL_NUM; i++){
         RS_Station *rs = ex_unit->allReservationStations[i];
-        if((ROB_entry*)(ROB->items[rs->destination]) == rob_entry){
+        if(rs->busy && (ROB_entry*)(rs->thread->ROB->items[rs->destination]) == rob_entry){
             if(!rob_entry->valid){
                 rs->busy = 0;
             }
@@ -325,33 +361,48 @@ void invalidateROBEntry(ROB_entry *rob_entry){
     }
 }
 
-void executeBranch(RS_Station *rs_station){
-    ROB_entry* rob_entry;
-    int ended = 0, i;
-    for(i=rs_station->destination+1; i<ROB->size; i++){
-        if(i==ROB->tail){
-            ended = 1;
-            break;
+void executeBranch(RS_Station *rs_station, int branch_taken){
+    ROB_entry* rob_entry = rs_station->thread->ROB->items[rs_station->destination];
+    Instruction *instruction = rob_entry->instruction;
+    int destructive_branch;
+    if(instruction->branch_predicted){
+        if(instruction->prediction_taken == branch_taken)
+            destructive_branch = 0;
+        else
+            destructive_branch = 1;
+    } else
+        destructive_branch = branch_taken;
+    setBTBEntry(instruction, branch_taken, instruction->target);
+    if(destructive_branch){
+        int ended = 0, i;
+        for(i=rs_station->destination+1; i<rs_station->thread->ROB->size; i++){
+            if(i==rs_station->thread->ROB->tail){
+                ended = 1;
+                break;
+            }
+            rob_entry = rs_station->thread->ROB->items[i];
+            invalidateROBEntry(rob_entry);
         }
-        rob_entry = ROB->items[i];
-        invalidateROBEntry(rob_entry);
+        if(rs_station->thread->ROB->tail == rs_station->thread->ROB->size)
+            ended = 1;
+        for(i=0; i<rs_station->thread->ROB->tail&&ended==0; i++){
+            rob_entry = rs_station->thread->ROB->items[i];
+            invalidateROBEntry(rob_entry);
+        }
+        rs_station->thread->instructionQueue -> head = 0;
+        rs_station->thread->instructionQueue -> tail = 0;
+        rs_station->thread->instructionQueue -> count = 0;
+        if(if_unit->threadIndex == instruction->threadIndex)
+            if_unit->n_instructions = 0;
+        rob_entry = rs_station->thread->ROB->items[rs_station->destination];
+        rs_station->thread->PC = branch_taken ? rob_entry->instruction->target : instruction->PC+4;
     }
-    for(i=0; i<ROB->tail&&ended==0; i++){
-        rob_entry = ROB->items[i];
-        invalidateROBEntry(rob_entry);
-    }
-    id_unit->instructionQueue -> head = 0;
-	id_unit->instructionQueue -> tail = 0;
-	id_unit->instructionQueue -> count = 0;
-	if_unit->n_instructions = 0;
-	id_unit->min_fetched_instructions = 0;
-    rob_entry = ROB->items[rs_station->destination];
-    if_unit->PC = rob_entry->instruction->target;
-    rob_entry->rob_state = WROTE_RESULT;
-    rs_station->busy = 0;
+	//id_unit->min_fetched_instructions = 0;
 }
 
 void execute_operation(RS_Station *rs_station, int *iresult, float *fresult, int *aresult){
+    ROB_entry* rob_entry = rs_station->thread->ROB->items[rs_station->destination];
+    printf ("Thread %i EXECUTED      %i: %s\n", rob_entry->instruction->threadIndex, rob_entry->instruction->PC, rob_entry->instruction->instr);
     DictionaryEntry *dataCacheElement;
     *iresult = 0;
     *fresult = 0.0f;
@@ -384,19 +435,21 @@ void execute_operation(RS_Station *rs_station, int *iresult, float *fresult, int
         break;
     case LD:
         *aresult = rs_station->vj + rs_station->vk;
-        dataCacheElement = getValueChainByDictionaryKey (dataCache, aresult);
+        dataCacheElement = getValueChainByDictionaryKey (rs_station->thread->dataCache, aresult);
         *iresult = (int) *((double*)(dataCacheElement -> value -> value));
         break;
     case SD:
-        *aresult = rs_station->vj + rs_station->vk;
+        *aresult = rs_station->vj + rob_entry->instruction->immediate;
+        *iresult = rs_station->vk;
         break;
     case L_D:
         *aresult = rs_station->vj + rs_station->vk;
-        dataCacheElement = getValueChainByDictionaryKey (dataCache, aresult);
+        dataCacheElement = getValueChainByDictionaryKey (rs_station->thread->dataCache, aresult);
         *fresult = *((double*)(dataCacheElement -> value -> value));
         break;
     case S_D:
-        *aresult = rs_station->vj + rs_station->vk;
+        *aresult = rs_station->vj + rob_entry->instruction->immediate;
+        *fresult = rs_station->vfk;
         break;
     case ADD_D:
         *fresult = rs_station->vfj + rs_station->vfk;

@@ -11,6 +11,8 @@
 #include "./ADT/CircularQueue.h"
 #include "./ADT/Dictionary.h"
 
+typedef struct _Thread Thread;
+
 typedef enum _opCode {
 	AND,
 	ANDI,
@@ -51,6 +53,8 @@ typedef struct _BTB_value{
 
 //data structure for decoded instruction
 typedef struct _instruction {
+    int threadIndex;
+    Thread *thread;
     char instr[MAX_LINE];
     int PC;
 	OpCode op;
@@ -104,8 +108,8 @@ typedef struct _cpu {
 
 	int PC; //program counter
 
-	INTReg **integerRegisters; //integer register
-        FPReg **floatingPointRegisters; //FP registers
+	//INTReg **integerRegisters; //integer register
+    //FPReg **floatingPointRegisters; //FP registers
 
 	int memoryAddress;
 
@@ -132,15 +136,15 @@ typedef struct _IF_Instr_entry{
 } IF_Instr_entry;
 
 typedef struct _IFUnit {
-    int PC;
 	Instruction* instructions[32];
+	int threadIndex;
 	int n_instructions;
 } IF_Unit;
 
 typedef struct _IDUnit {
-	CircularQueue *instructionQueue;
-	int n_instructions;
-	int min_fetched_instructions;
+	//CircularQueue *instructionQueue;
+	//int n_instructions;
+	//int min_fetched_instructions;
 } ID_Unit;
 
 typedef struct _MEMUnit {
@@ -167,6 +171,7 @@ typedef struct _RS_Station {
 	int a_immediate;
 	int a_register;
 	int target;
+	Thread *thread;
 } RS_Station;
 
 typedef struct _EXUnit {
@@ -212,5 +217,24 @@ typedef struct _Renaming_Status {
 	int *int_rreg;
 	int *fp_rreg;
 } Renaming_Status;
+
+typedef struct _Thread {
+    int is_available;
+    Dictionary *instructionCache;
+    Dictionary *dataCache;
+    Dictionary *codeLabels;
+    int PC;
+    Dictionary *BTB;
+    CircularQueue *ROB;
+    CircularQueue *instructionQueue;
+	INTReg **integerRegisters; //integer register
+    FPReg **floatingPointRegisters; //FP registers
+    Register_Status *register_status;
+    INTReg **renaming_int_registers;
+    FPReg **renaming_fp_registers;
+    Renaming_Status *renaming_status;
+} Thread;
+
+
 
 #endif /* GLOBAL_DATATYPES_H_ */

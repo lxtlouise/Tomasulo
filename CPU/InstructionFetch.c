@@ -42,18 +42,19 @@ void copyInstruction(Instruction *dest, Instruction *src){
 
 void initializeFetch() {
     if_unit = (IF_Unit*) malloc(sizeof(IF_Unit));
-    BTB = createDictionary(getHashCodeFromCacheAddress_IF, compareBTBValues);
-    if_unit->PC = instructionCacheBaseAddress;
+    if_unit->threadIndex = 0;
+    //BTB = createDictionary(getHashCodeFromCacheAddress_IF, compareBTBValues);
+    //if_unit->PC = instructionCacheBaseAddress;
 }
 
 
 void setBTBEntry(Instruction* instruction, int branch_taken, int branch_target){
     BTB_value* val;
-    DictionaryEntry *dval = getValueChainByDictionaryKey(BTB, &(instruction->PC));
+    DictionaryEntry *dval = getValueChainByDictionaryKey(instruction->thread->BTB, &(instruction->PC));
     if(dval==NULL){
         val = malloc(sizeof(BTB_value));
         val->PC = instruction->PC;
-        addDictionaryEntry (BTB, &(instruction->PC), val);
+        addDictionaryEntry (instruction->thread->BTB, &(instruction->PC), val);
     } else{
         val = dval->value->value;
         val->PC = instruction->PC;
@@ -66,6 +67,7 @@ void setBTBEntry(Instruction* instruction, int branch_taken, int branch_target){
 }
 
 int predecodeBranchInstruction(Instruction *instruction){
+    Thread *thread = instruction->thread;
     char *token = (char *) malloc (sizeof(char) * MAX_LINE);
 
 	int is_branch = 0;
@@ -101,13 +103,13 @@ int predecodeBranchInstruction(Instruction *instruction){
 	}
 
 	if (is_branch) {
-		DictionaryEntry *codeLabel = getValueChainByDictionaryKey (codeLabels, (void *) token);
+		DictionaryEntry *codeLabel = getValueChainByDictionaryKey (thread->codeLabels, (void *) token);
 
 		if (codeLabel == NULL) {
 			printf("Invalid code label cannot be resolved...\n");
 			exit (EXIT_FAILURE);
 		} else {
-            DictionaryEntry *dval = getValueChainByDictionaryKey(BTB, &(instruction->PC));
+            DictionaryEntry *dval = getValueChainByDictionaryKey(thread->BTB, &(instruction->PC));
             if(dval){
                 BTB_value *val = dval->value->value;
                 if(val->PC == instruction->PC){
@@ -123,33 +125,45 @@ int predecodeBranchInstruction(Instruction *instruction){
 }
 
 int runClockCycle_IF() {
+    int result = 0;
     int i;
+    if_unit->threadIndex = 0;
+    if(threads[1].is_available && threads[1].instructionQueue->count < threads[0].instructionQueue->count)
+        if_unit->threadIndex = 1;
+    Thread *thread = &(threads[if_unit->threadIndex]);
+    int instrs = config->NF;
+    if(thread->instructionQueue->size - thread->instructionQueue->count < config->NF)
+        instrs = thread->instructionQueue->size - thread->instructionQueue->count;
     if_unit->n_instructions = 0;
-    for(i=id_unit->min_fetched_instructions; i<config->NF; i++){
-        if (if_unit->PC >= (instructionCacheBaseAddress + (cacheLineSize * numberOfInstruction))) { //check whether PC exceeds last instruction in cache
+    for(i=0; i<instrs; i++){
+        if (thread->PC >= (instructionCacheBaseAddress + (cacheLineSize * numberOfInstruction))) { //check whether PC exceeds last instruction in cache
             printf ("All instructions finished...\n");
-            return -1;
+            break;
         }
+        result++;
 
-
-        DictionaryEntry *currentInstruction = getValueChainByDictionaryKey (instructionCache, &(if_unit->PC));
+        DictionaryEntry *currentInstruction = getValueChainByDictionaryKey (thread->instructionCache, &(thread->PC));
+        if(currentInstruction==NULL)
+            break;
         if_unit->instructions[i] = (Instruction*)malloc(sizeof(Instruction));
+        if_unit->instructions[i]->threadIndex = if_unit->threadIndex;
+        if_unit->instructions[i]->thread = thread;
         initializeInstruction(if_unit->instructions[i]);
-        if_unit->instructions[i]->PC = if_unit->PC;
+        if_unit->instructions[i]->PC = thread->PC;
         strncpy(if_unit->instructions[i]->instr, ((char*)currentInstruction -> value -> value), MAX_LINE);
-        printf ("Fetched %d:%s\n", if_unit->PC, if_unit->instructions[i]->instr);
+        printf ("Thread %i FETCHED      %i: %s\n", if_unit->instructions[i]->threadIndex, thread->PC, if_unit->instructions[i]->instr);
         if_unit->instructions[i]->is_valid = 1;
         if(predecodeBranchInstruction(if_unit->instructions[i])){
             if(if_unit->instructions[i]->prediction_taken)
-                if_unit->PC = if_unit->instructions[i]->prediction_target;
+                thread->PC = if_unit->instructions[i]->prediction_target;
             else
-                if_unit->PC = if_unit->PC + 4;
+                thread->PC = thread->PC + 4;
         } else {
-            if_unit->PC = if_unit->PC + 4;
+            thread->PC = thread->PC + 4;
         }
         if_unit->n_instructions = i+1;
     }
-    return 1;
+    return result;
 }
 
 int getHashCodeFromCacheAddress_IF (void *address) {

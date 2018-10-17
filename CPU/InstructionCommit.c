@@ -6,9 +6,9 @@ void propagateResultAgain(ROB_entry *rob_entry){
     //int renamed_int = checkRegStates(0, instruction->reg_target_int);
     //int renamed_float = checkRegStates(1, instruction->reg_target_fp);
     if(instruction->reg_target_int>=0)
-        register_status->int_reg[instruction->reg_target_int] = -1;
+        instruction->thread->register_status->int_reg[instruction->reg_target_int] = -1;
     if(instruction->reg_target_fp>=0)
-        register_status->fp_reg[instruction->reg_target_fp] = -1;
+        instruction->thread->register_status->fp_reg[instruction->reg_target_fp] = -1;
 
     int renamed_int = rob_entry->int_renaming_register;
     int renamed_float = rob_entry->fp_renaming_register;
@@ -16,6 +16,8 @@ void propagateResultAgain(ROB_entry *rob_entry){
     int i;
     for(i=0; i<RESERV_ALL_NUM; i++){
         RS_Station *rs = ex_unit->allReservationStations[i];
+        if(rs->thread!=instruction->thread)
+            continue;
         if(rs->qj >= 0 && rs->qj == renamed_int){
             rs->vj = rob_entry->int_result;
             rs->qj = -1;
@@ -34,9 +36,9 @@ void propagateResultAgain(ROB_entry *rob_entry){
         }
     }
     if(renamed_int>=0)
-        renaming_status -> int_rreg[renamed_int] = 0;
+        instruction->thread->renaming_status -> int_rreg[renamed_int] = 0;
     if(renamed_float>=0)
-        renaming_status -> fp_rreg[renamed_float] = 0;
+        instruction->thread->renaming_status -> fp_rreg[renamed_float] = 0;
 }
 
 int checkBUS() {
@@ -49,51 +51,57 @@ int checkBUS() {
 
 void writeRegister(ROB_entry * rob_entry) {
   OpCode opcode = rob_entry -> instruction -> op;
+  Thread *thread = rob_entry->instruction->thread;
   int destination;
   int address;
   if (opcode == AND || opcode == ANDI || opcode == OR || opcode == ORI || opcode == SLT || opcode == SLTI || opcode == DADD
   || opcode == DADDI || opcode == DSUB || opcode == DMUL || opcode == LD) {
     destination = rob_entry -> instruction -> reg_target_int;
-    cpu -> integerRegisters[destination] -> data = rob_entry->int_result;
+    thread -> integerRegisters[destination] -> data = rob_entry->int_result;
   } else if (opcode == ADD_D || opcode == SUB_D || opcode == MUL_D || opcode == DIV_D || opcode == L_D) {
     destination = rob_entry -> instruction -> reg_target_fp;
-    cpu -> floatingPointRegisters[destination] -> data = rob_entry->float_result;
+    thread -> floatingPointRegisters[destination] -> data = rob_entry->float_result;
   }
 }
 
 void writeMemory(ROB_entry * rob_entry) {
+  Thread *thread = rob_entry->instruction->thread;
   void * address = malloc(sizeof(int));
   *((int*)address) = rob_entry -> addr_result;
   OpCode opcode = rob_entry -> instruction -> op;
   void * result = malloc(sizeof(double));
   if (opcode == SD) {
     *((double*)result) = rob_entry -> int_result;
-    addDictionaryEntry(dataCache, address, result);
+    removeDictionaryEntriesByKey (thread->dataCache, address);
+    addDictionaryEntry(thread->dataCache, address, result);
   } else if (opcode == S_D) {
     *((double*)result) = rob_entry -> float_result;
-    addDictionaryEntry(dataCache, address, result);
+    removeDictionaryEntriesByKey (thread->dataCache, address);
+    addDictionaryEntry(thread->dataCache, address, result);
   }
 }
 
-void commit() {
-  CDB_counter = 0;
+int commitThread(Thread *thread) {
+  int result = 0;
   while (1) {
     int bus = checkBUS();
     if (bus != -1) {
-	printf("size2: %d\n", ROB -> count);
-      if (ROB->count == 0) {
-        printf("Rob is empty!");
+	//printf("size2: %d\n", thread->ROB -> count);
+      if (thread->ROB->count == 0) {
+        //printf("Rob is empty!");
         break;
       } else {
-        if (((ROB_entry*)ROB->items[ROB->head])->valid == 0) {
-          while (ROB->count>0&& ((ROB_entry*)ROB->items[ROB->head])->valid == 0) {
-            dequeueCircular(ROB);
+        if (((ROB_entry*)thread->ROB->items[thread->ROB->head])->valid == 0) {
+          while (thread->ROB->count>0&& ((ROB_entry*)thread->ROB->items[thread->ROB->head])->valid == 0) {
+            dequeueCircular(thread->ROB);
           }
         } else {
-          if(((ROB_entry*)ROB->items[ROB->head])->rob_state != WROTE_RESULT){
+          if(((ROB_entry*)thread->ROB->items[thread->ROB->head])->rob_state != WROTE_RESULT){
             break;
           } else {
-            ROB_entry *entry = (ROB_entry *) dequeueCircular(ROB);
+            ROB_entry *entry = (ROB_entry *) dequeueCircular(thread->ROB);
+            result++;
+            printf("Thread %i COMMITED     %i: %s -> %i - %f\n", entry->instruction->threadIndex, entry->instruction->PC, entry->instruction->instr, entry->int_result, entry->float_result);
             if (entry->instruction->op == SD || entry->instruction->op == S_D) {
               writeMemory(entry);
               CDB_counter++;
@@ -112,4 +120,15 @@ void commit() {
         break;
       }
     }
+    return result;
+}
+
+int commit(){
+    CDB_counter = 0;
+    Thread *thread = chooseThread(1);
+    int result = commitThread(thread);
+    thread = chooseThread(0);
+    if(thread==NULL)
+        return result;
+    return result + commitThread(thread);
 }
