@@ -27,7 +27,8 @@ void read_configfile(char *fileName) {
         }
         char* line_ptr = NULL;
         if ((line_ptr = strchr(line, 'F')) != NULL && *line_ptr != 0) {
-            tempLine = strtok(line_ptr, WHITE_SPACE);
+            // tempLine = strtok(line_ptr, WHITE_SPACE);
+            tempLine = strtok(line_ptr, CONFIG_EQUAL);
             tempLine = strtok(NULL,",");
             strcpy(temp, tempLine);
             config -> NF = atoi(temp);
@@ -35,7 +36,8 @@ void read_configfile(char *fileName) {
         }
 
         if ((line_ptr = strchr(line, 'I')) != NULL && *line_ptr != 0) {
-            tempLine = strtok(line_ptr, WHITE_SPACE);
+            // tempLine = strtok(line_ptr, WHITE_SPACE);
+            tempLine = strtok(line_ptr, CONFIG_EQUAL);
             tempLine = strtok(NULL,",");
             strcpy(temp, tempLine);
             config -> NI = atoi(temp);
@@ -44,7 +46,8 @@ void read_configfile(char *fileName) {
         }
 
         if ((line_ptr = strchr(line, 'W')) != NULL && *line_ptr != 0) {
-            tempLine = strtok(line_ptr, WHITE_SPACE);
+            // tempLine = strtok(line_ptr, WHITE_SPACE);
+            tempLine = strtok(line_ptr, CONFIG_EQUAL);
             tempLine = strtok(NULL,",");
             strcpy(temp, tempLine);
             config -> NW = atoi(temp);
@@ -52,7 +55,8 @@ void read_configfile(char *fileName) {
         }
 
         if ((line_ptr = strchr(line, 'R')) != NULL && *line_ptr != 0) {
-            tempLine = strtok(line_ptr, WHITE_SPACE);
+            // tempLine = strtok(line_ptr, WHITE_SPACE);
+            tempLine = strtok(line_ptr, CONFIG_EQUAL);
             tempLine = strtok(NULL,",");
             strcpy(temp, tempLine);
             config -> NR = atoi(temp);
@@ -61,7 +65,8 @@ void read_configfile(char *fileName) {
         }
 
         if ((line_ptr = strchr(line, 'B')) != NULL && *line_ptr != 0) {
-            tempLine = strtok(line_ptr, WHITE_SPACE);
+            // tempLine = strtok(line_ptr, WHITE_SPACE);
+            tempLine = strtok(line_ptr, CONFIG_EQUAL);
             tempLine = strtok(NULL,",");
             strcpy(temp, tempLine);
             config -> NB = atoi(temp);
@@ -77,4 +82,3 @@ void read_configfile(char *fileName) {
     if (fp)
         fclose(fp);
 }
-
