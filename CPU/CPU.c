@@ -11,19 +11,31 @@ int getHashCodeFromPCHash (void *PCHash);
 int getHashCodeFromCacheAddress_IF (void *address);
 int compareBTBValues (void *btbvalue1, void *btbvalue2);
 int getHashCodeFromCacheAddress (void *address);
+int compareMemoryValues (void *value1, void *value2);
 int compareInstructions (void *instruction1, void *instruction2);
+void printCodeLabels (Thread *thread);
+void printDataCache();
+void printRSStation();
+void printIntegerRegisters (Thread *thread);
+void printFPRegisters (Thread *thread);
+void printROB(Thread *thread);
+void printRegisterState(Thread *thread);
+
 
 void InitializeThread(int index, Thread* thread, char *fileName){
     int i;
-	thread->num_stalls = 0;
+    thread->rs_stalls = 0;
+    thread->rob_stalls = 0;
+    thread->rename_stalls = 0;
+    thread->num_stalls = 0;
     thread->index = index;
     if(fileName==NULL){
         thread->is_available = 0;
         return;
     }
     thread->is_available = 1;
-    thread->instructionCacheBaseAddress = index==0?1000:2000;
-    thread->numberOfInstruction = fillInstructionAndDataCache (fileName, thread->instructionCacheBaseAddress, &(cpu->instructionCache), &(thread->dataCache), &(thread->codeLabels));
+    thread->instructionCacheBaseAddress = index==0?1024:2048;
+    thread->numberOfInstruction = fillInstructionAndDataCache (fileName, thread->instructionCacheBaseAddress, &(thread->codeLabels));
     thread->ROB = createCircularQueue(config -> NR);
     thread->BTB = createDictionary(getHashCodeFromCacheAddress_IF, compareBTBValues);
     thread->PC = thread->instructionCacheBaseAddress;
@@ -81,9 +93,6 @@ void InitializeThread(int index, Thread* thread, char *fileName){
 		thread->renaming_fp_registers[i] -> data = 0;
 		thread->renaming_fp_registers[i] -> fpResult = 0;
  	}
-	printInstructionCache (thread); //print instruction cache
-
-	printDataCache (thread);
 
 	printCodeLabels (thread); //print data cache
 
@@ -98,9 +107,9 @@ void initializeCPU () {
 	cpu = (CPU *) malloc (sizeof(CPU));
 
 	cpu -> cycle = 0;
-	//cpu -> PC = instructionCacheBaseAddress;
 
 	cpu -> instructionCache = createDictionary (getHashCodeFromCacheAddress, compareInstructions);
+    cpu -> dataCache = createDictionary (getHashCodeFromCacheAddress, compareMemoryValues);
 
 	cpu -> intDestReg = 0;
 	cpu -> intResult = 0;
@@ -133,24 +142,34 @@ Thread *chooseThread(int is_primary){
 
 void printState(){
     printf("------------------------- CPU ----------------------------\n\n");
+	printInstructionCache ();
+	printDataCache ();
     printRSStation();
     printf("----------------------- THREAD 0 -------------------------\n\n");
     printIntegerRegisters (&(threads[0]));
     printFPRegisters (&(threads[0]));
 	printROB(&(threads[0]));
 	printRegisterState(&(threads[0]));
-	printDataCache(&(threads[0]));
 	if(threads[1].is_available){
         printf("----------------------- THREAD 1 -------------------------\n\n");
         printIntegerRegisters (&(threads[1]));
         printFPRegisters (&(threads[1]));
         printROB(&(threads[1]));
         printRegisterState(&(threads[1]));
-        printDataCache(&(threads[1]));
 	}
 	printf("------------------------ STALLS ---------------------------\n\n");
-	printf("Number of stalls in THREAD 0: %d\n", threads[0].num_stalls);
-	printf("Number of stalls in THREAD 1: %d\n", threads[1].num_stalls);
+    printf("----------------------- THREAD 0 -------------------------\n");
+	printf("Stalls due to ROB being full: %d\n", threads[0].rob_stalls);
+	printf("Stalls due to unavailable reservation stations: %d\n", threads[0].rs_stalls);
+	printf("Stalls due to unavailable renaming registers: %d\n", threads[0].rename_stalls);
+	printf("Total number of stalls: %d\n\n", threads[0].num_stalls);
+	if(threads[1].is_available){
+        printf("----------------------- THREAD 1 -------------------------\n");
+        printf("Stalls due to ROB being full: %d\n", threads[1].rob_stalls);
+        printf("Stalls due to unavailable reservation stations: %d\n", threads[1].rs_stalls);
+        printf("Stalls due to unavailable renaming registers: %d\n", threads[1].rename_stalls);
+        printf("Total number of stalls: %d\n\n", threads[1].num_stalls);
+	}
 }
 
 /**

@@ -88,12 +88,12 @@ void writeMemory(ROB_entry * rob_entry) {
   void * result = malloc(sizeof(double));
   if (opcode == SD) {
     *((double*)result) = rob_entry -> int_result;
-    removeDictionaryEntriesByKey (thread->dataCache, address);
-    addDictionaryEntry(thread->dataCache, address, result);
+    removeDictionaryEntriesByKey (cpu->dataCache, address);
+    addDictionaryEntry(cpu->dataCache, address, result);
   } else if (opcode == S_D) {
     *((double*)result) = rob_entry -> float_result;
-    removeDictionaryEntriesByKey (thread->dataCache, address);
-    addDictionaryEntry(thread->dataCache, address, result);
+    removeDictionaryEntriesByKey (cpu->dataCache, address);
+    addDictionaryEntry(cpu->dataCache, address, result);
   }
 }
 

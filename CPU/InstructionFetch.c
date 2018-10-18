@@ -153,11 +153,17 @@ int runClockCycle_IF() {
     if(thread->instructionQueue->size - thread->instructionQueue->count < config->NF)
         instrs = thread->instructionQueue->size - thread->instructionQueue->count;
     if_unit->n_instructions = 0;
+    int cacheLine = (thread->PC >> 2) / (cacheLineSize);
+
     for(i=0; i<instrs; i++){
         if (thread->PC >= (thread->instructionCacheBaseAddress + (cacheLineSize * thread->numberOfInstruction))) { //check whether PC exceeds last instruction in cache
             break;
         }
-
+        int cL = (thread->PC >> 2) / (cacheLineSize);
+        if(cL != cacheLine){
+            printf("Thread %i Instruction out of cache line\n", thread->index);
+            break;
+        }
         DictionaryEntry *currentInstruction = getValueChainByDictionaryKey (cpu->instructionCache, &(thread->PC));
         result++;
         if_unit->instructions[i] = (Instruction*)malloc(sizeof(Instruction));
@@ -184,11 +190,11 @@ int runClockCycle_IF() {
 }
 
 int getHashCodeFromCacheAddress_IF (void *address) {
-    return (*((int*)address) & 0x3c) >> 2;
+    return (*((int*)address) & 0xf0) >> 4;
 }
 
 
 int compareBTBValues (void *PC1, void *PC2) {
-    return (*((int*)PC1) & 0x3c)  - (*((int*)PC2) & 0x3c);
+    return (*((int*)PC1) & 0xf0)  - (*((int*)PC2) & 0xf0);
 }
 

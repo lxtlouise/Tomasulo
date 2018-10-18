@@ -429,7 +429,7 @@ void execute_operation(RS_Station *rs_station, int *iresult, float *fresult, int
         break;
     case LD:
         *aresult = rs_station->vj + rs_station->vk;
-        dataCacheElement = getValueChainByDictionaryKey (rs_station->thread->dataCache, aresult);
+        dataCacheElement = getValueChainByDictionaryKey (cpu->dataCache, aresult);
         *iresult = (int) *((double*)(dataCacheElement -> value -> value));
         break;
     case SD:
@@ -438,7 +438,7 @@ void execute_operation(RS_Station *rs_station, int *iresult, float *fresult, int
         break;
     case L_D:
         *aresult = rs_station->vj + rs_station->vk;
-        dataCacheElement = getValueChainByDictionaryKey (rs_station->thread->dataCache, aresult);
+        dataCacheElement = getValueChainByDictionaryKey (cpu->dataCache, aresult);
         *fresult = *((double*)(dataCacheElement -> value -> value));
         break;
     case S_D:

@@ -54,19 +54,9 @@
 int numberOfIntRegisters; //NIR
 int numberOfFPRegisters; //NFPR
 
-//int instructionCacheBaseAddress; //ICBA
-
 int cacheLineSize; //CLS
 
-//int numberOfInstruction;
-
 int CDB_counter;
-
-//Dictionary *instructionCache;
-//Dictionary *dataCache;
-//Dictionary *codeLabels;
-//Dictionary *BTB;
-//CircularQueue *ROB;
 
 Thread threads[2];
 
@@ -86,13 +76,9 @@ RS_Station **rs_fpmutl;
 RS_Station **rs_fpdiv;
 RS_Station **rs_bu;
 
-//Register_Status *register_status;
-//INTReg **renaming_int_registers;
-//FPReg **renaming_fp_registers;
-//Renaming_Status *renaming_status;
 void InitializeThread(int index, Thread* thread, char *fileName);
 
-int fillInstructionAndDataCache (char *fileName, int instructionCacheBaseAddress, Dictionary **instructionCache, Dictionary **dataCache, Dictionary **codeLabels);
+int fillInstructionAndDataCache (char *fileName, int instructionCacheBaseAddress, Dictionary **codeLabels);
 
 void setBTBEntry(Instruction* instruction, int branch_taken, int branch_target);
 
@@ -112,14 +98,7 @@ int runClockCycle_EX();
 int commit();
 
 void printState();
-void printInstructionCache (Thread *thread);
-//void printCodeLabels ();
-//void printDataCache ();
-//void printIntegerRegisters ();
-//void printFPRegisters ();
-//void printRSStation();
-//void printROB();
-//void printRegisterState();
+void printInstructionCache ();
 
 void read_configfile(char * fileName);
 Thread *chooseThread(int is_primary);

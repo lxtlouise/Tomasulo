@@ -10,15 +10,15 @@
 /**
  * Utility method to print instruction cache
  */
-void printInstructionCache (Thread *thread) {
+void printInstructionCache () {
 	DictionaryEntry *current;
 
-	if (thread->instructionCache != NULL) {
+	if (cpu->instructionCache != NULL) {
 		printf ("-----------------\n");
 		printf ("Instruction Cache\n");
 		printf ("-----------------\n");
 
-		for (current = thread->instructionCache -> head; current != NULL; current = current -> next)
+		for (current = cpu->instructionCache -> head; current != NULL; current = current -> next)
 			printf ("%d: %s\n", *((int*)current -> key), ((char*)current -> value -> value));
 	}
 }
@@ -42,15 +42,15 @@ void printCodeLabels (Thread *thread) {
 /***
  * Utility method to print data cache
  */
-void printDataCache (Thread *thread) {
+void printDataCache () {
 	DictionaryEntry *current;
 
-	if (thread->dataCache != NULL) {
+	if (cpu->dataCache != NULL) {
 		printf ("----------\n");
 		printf ("Data Cache\n");
 		printf ("----------\n");
 
-		for (current = thread->dataCache -> head; current != NULL; current = current -> next)
+		for (current = cpu->dataCache -> head; current != NULL; current = current -> next)
 			printf ("Mem(%d) = %0.1lf\n", *((int*)current -> key), *((double*)current -> value -> value));
 	}
 }

@@ -105,6 +105,7 @@ typedef struct _cpu {
 	int cycle; //counter for number of cycles
 
 	Dictionary *instructionCache;
+    Dictionary *dataCache;
 
 	int numberOfInstructionExecuted; //counter for total number of instructions committed
 
@@ -221,8 +222,6 @@ typedef struct _Thread {
     int index;
     int numberOfInstruction;
     int instructionCacheBaseAddress;
-    Dictionary *instructionCache;
-    Dictionary *dataCache;
     Dictionary *codeLabels;
     int PC;
     Dictionary *BTB;
@@ -234,6 +233,9 @@ typedef struct _Thread {
     INTReg **renaming_int_registers;
     FPReg **renaming_fp_registers;
     Renaming_Status *renaming_status;
+    int rs_stalls;
+    int rob_stalls;
+    int rename_stalls;
 	int num_stalls;
 } Thread;
 
