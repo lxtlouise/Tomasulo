@@ -66,7 +66,6 @@ void propagateResult(RS_Station *rs_station, int int_result, float float_result,
     rob_entry->int_result = int_result;
     rob_entry->float_result = float_result;
     rob_entry->addr_result = addr_result;
-    rob_entry->rob_state = WROTE_RESULT;
 }
 
 void execute_operation(RS_Station *rs_station, int *iresult, float *fresult, int *aresult);
@@ -95,7 +94,6 @@ int runClockCycle_EX(){
                     int branch_taken, ba; float bf;
                     execute_operation(rs_station, &branch_taken, &bf, &ba);
                     executeBranch(rs_station, branch_taken);
-                    rob_entry->rob_state = WROTE_RESULT;
                     rs_station->busy = 0;
                     rs_station->execution_state++;
                 } else
@@ -396,6 +394,7 @@ void executeBranch(RS_Station *rs_station, int branch_taken){
 
 void execute_operation(RS_Station *rs_station, int *iresult, float *fresult, int *aresult){
     ROB_entry* rob_entry = rs_station->thread->ROB->items[rs_station->destination];
+    rob_entry->rob_state = WROTE_RESULT;
     printf ("Thread %i EXECUTED    %i: %s\n", rob_entry->instruction->threadIndex, rob_entry->instruction->PC, rob_entry->instruction->instr);
     DictionaryEntry *dataCacheElement;
     *iresult = 0;
