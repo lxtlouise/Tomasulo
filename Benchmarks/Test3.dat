@@ -1,0 +1,20 @@
+DADDI R1, R0, 4
+LD R2, 0(R1)
+DADDI R1, R1, 4
+LD R2, 0(R1)
+DADDI R1, R1, 4
+LD R2, 0(R1)
+DADDI R1, R1, 4
+LD R2, 0(R1)
+DADDI R1, R1, 4
+LD R2, 0(R1)
+DADDI R1, R1, 4
+LD R2, 0(R1)
+SD R2, 100(R0)
+DATA
+Mem(4) = 10
+Mem(8) = 20
+Mem(12) = 30
+Mem(16) = 40
+Mem(20) = 50
+Mem(24) = 60
