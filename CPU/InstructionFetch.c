@@ -126,12 +126,12 @@ int checkIfAvailableInstructions(){
     int result = 0;
     Thread *thread;
     thread = chooseThread(1);
-    if (thread->PC < (instructionCacheBaseAddress + (cacheLineSize * thread->numberOfInstruction))) { //check whether PC exceeds last instruction in cache
+    if (thread->PC < (thread->instructionCacheBaseAddress + (cacheLineSize * thread->numberOfInstruction))) { //check whether PC exceeds last instruction in cache
         result++;
     }
     thread = chooseThread(0);
     if(thread!=NULL){
-        if (thread->PC < (instructionCacheBaseAddress + (cacheLineSize * thread->numberOfInstruction))) { //check whether PC exceeds last instruction in cache
+        if (thread->PC < (thread->instructionCacheBaseAddress + (cacheLineSize * thread->numberOfInstruction))) { //check whether PC exceeds last instruction in cache
             result++;
         }
     }
@@ -154,11 +154,11 @@ int runClockCycle_IF() {
         instrs = thread->instructionQueue->size - thread->instructionQueue->count;
     if_unit->n_instructions = 0;
     for(i=0; i<instrs; i++){
-        if (thread->PC >= (instructionCacheBaseAddress + (cacheLineSize * thread->numberOfInstruction))) { //check whether PC exceeds last instruction in cache
+        if (thread->PC >= (thread->instructionCacheBaseAddress + (cacheLineSize * thread->numberOfInstruction))) { //check whether PC exceeds last instruction in cache
             break;
         }
 
-        DictionaryEntry *currentInstruction = getValueChainByDictionaryKey (thread->instructionCache, &(thread->PC));
+        DictionaryEntry *currentInstruction = getValueChainByDictionaryKey (cpu->instructionCache, &(thread->PC));
         result++;
         if_unit->instructions[i] = (Instruction*)malloc(sizeof(Instruction));
         if_unit->instructions[i]->threadIndex = if_unit->threadIndex;

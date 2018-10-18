@@ -10,7 +10,7 @@
 int numberOfIntRegisters = 32; //NIR
 int numberOfFPRegisters = 32; //NFPR
 
-int instructionCacheBaseAddress = 1000; //ICBA
+//int instructionCacheBaseAddress = 1000; //ICBA
 
 int cacheLineSize = 4; //CLS
 
@@ -28,13 +28,13 @@ int main(int argc, char** argv) {
 	config = (Config*)malloc(sizeof(Config));
 	read_configfile(ENV_CONFIG_FILE);
 
+	initializeCPU (); //initialize CPU data structure
+
     printf("----------------------- THREAD 0 -------------------------\n\n");
 	InitializeThread(0, &(threads[0]), argv[1]);
 
     printf("----------------------- THREAD 1 -------------------------\n\n");
 	InitializeThread(1, &(threads[1]), argc>=3?argv[2]:NULL);
-
-	initializeCPU (); //initialize CPU data structure
 
 	initializeFetch(); // initialize IF unit
 

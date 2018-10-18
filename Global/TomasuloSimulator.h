@@ -54,7 +54,7 @@
 int numberOfIntRegisters; //NIR
 int numberOfFPRegisters; //NFPR
 
-int instructionCacheBaseAddress; //ICBA
+//int instructionCacheBaseAddress; //ICBA
 
 int cacheLineSize; //CLS
 
@@ -92,7 +92,7 @@ RS_Station **rs_bu;
 //Renaming_Status *renaming_status;
 void InitializeThread(int index, Thread* thread, char *fileName);
 
-int fillInstructionAndDataCache (char *fileName, Dictionary **instructionCache, Dictionary **dataCache, Dictionary **codeLabels);
+int fillInstructionAndDataCache (char *fileName, int instructionCacheBaseAddress, Dictionary **instructionCache, Dictionary **dataCache, Dictionary **codeLabels);
 
 void setBTBEntry(Instruction* instruction, int branch_taken, int branch_target);
 

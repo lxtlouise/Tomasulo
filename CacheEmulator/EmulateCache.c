@@ -19,7 +19,7 @@ size_t getlinenew(char **linep, size_t *n, FILE *fp);
  * This function emulates loader. Fills instruction and data cache upon reading .DAT file.
  * @param fileName: .DAT file provided as input to simulator
  */
-int fillInstructionAndDataCache (char *fileName, Dictionary **instructionCache, Dictionary **dataCache, Dictionary **codeLabels) {
+int fillInstructionAndDataCache (char *fileName, int instructionCacheBaseAddress, Dictionary **instructionCache, Dictionary **dataCache, Dictionary **codeLabels) {
 	char *line = (char *) malloc (sizeof(char) * MAX_LINE);
 	char *tempLine = (char *) malloc (sizeof(char) * MAX_LINE);
 	char label [MAX_LINE];
@@ -41,7 +41,7 @@ int fillInstructionAndDataCache (char *fileName, Dictionary **instructionCache, 
 	}
 
 	//Instantiate caches as dictionary data structure keyed by HEX address
-	*instructionCache = createDictionary (getHashCodeFromCacheAddress, compareInstructions);
+	//*instructionCache = createDictionary (getHashCodeFromCacheAddress, compareInstructions);
 	*dataCache = createDictionary (getHashCodeFromCacheAddress, compareMemoryValues);
 	*codeLabels = createDictionary (getHashCodeFromCodeLabel, compareCodeLabelAddress);
 

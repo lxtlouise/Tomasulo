@@ -104,6 +104,8 @@ typedef struct _FPReg {
 typedef struct _cpu {
 	int cycle; //counter for number of cycles
 
+	Dictionary *instructionCache;
+
 	int numberOfInstructionExecuted; //counter for total number of instructions committed
 
 	int PC; //program counter
@@ -218,6 +220,7 @@ typedef struct _Thread {
     int is_available;
     int index;
     int numberOfInstruction;
+    int instructionCacheBaseAddress;
     Dictionary *instructionCache;
     Dictionary *dataCache;
     Dictionary *codeLabels;

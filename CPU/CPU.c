@@ -10,6 +10,8 @@
 int getHashCodeFromPCHash (void *PCHash);
 int getHashCodeFromCacheAddress_IF (void *address);
 int compareBTBValues (void *btbvalue1, void *btbvalue2);
+int getHashCodeFromCacheAddress (void *address);
+int compareInstructions (void *instruction1, void *instruction2);
 
 void InitializeThread(int index, Thread* thread, char *fileName){
     int i;
@@ -20,10 +22,11 @@ void InitializeThread(int index, Thread* thread, char *fileName){
         return;
     }
     thread->is_available = 1;
-    thread->numberOfInstruction = fillInstructionAndDataCache (fileName, &(thread->instructionCache), &(thread->dataCache), &(thread->codeLabels));
+    thread->instructionCacheBaseAddress = index==0?1000:2000;
+    thread->numberOfInstruction = fillInstructionAndDataCache (fileName, thread->instructionCacheBaseAddress, &(cpu->instructionCache), &(thread->dataCache), &(thread->codeLabels));
     thread->ROB = createCircularQueue(config -> NR);
     thread->BTB = createDictionary(getHashCodeFromCacheAddress_IF, compareBTBValues);
-    thread->PC = instructionCacheBaseAddress;
+    thread->PC = thread->instructionCacheBaseAddress;
     thread->instructionQueue = createCircularQueue(config -> NI);
 
     //initialize integer registers
@@ -95,7 +98,9 @@ void initializeCPU () {
 	cpu = (CPU *) malloc (sizeof(CPU));
 
 	cpu -> cycle = 0;
-	cpu -> PC = instructionCacheBaseAddress;
+	//cpu -> PC = instructionCacheBaseAddress;
+
+	cpu -> instructionCache = createDictionary (getHashCodeFromCacheAddress, compareInstructions);
 
 	cpu -> intDestReg = 0;
 	cpu -> intResult = 0;
