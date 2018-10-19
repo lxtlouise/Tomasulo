@@ -5,4 +5,4 @@ Steps to run:
 2. Run 'make clean'
 3. Run 'make'
 4. Run './Tomasulo ../Benchmarks/Test1.dat' for part1
-5. Run './Tomasulo ../Benchmarks/Test1.dat ../Benchmarks/Test1.dat' for part2
+5. Run './Tomasulo ../Benchmarks/Test1.dat ../Benchmarks/Test2.dat' for part2
